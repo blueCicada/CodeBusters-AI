@@ -40,12 +40,39 @@ class Player {
 	 * Step 1: Check if 
 	 */
 	public void dumbAI() {
+		// Write an action using System.out.println()
+        // To debug: System.err.println("Debug messages...");
+		// MOVE x y | BUST id | RELEASE
+		
         for (int i = 0; i < this.bustersPerPlayer; i++) {
-
-            // Write an action using System.out.println()
-            // To debug: System.err.println("Debug messages...");
-            System.out.println("MOVE 8000 4500"); // MOVE x y | BUST id | RELEASE
+        	
+        	Buster curr = allies.get(i); //presumably
+        	
+        	//move to centre of arena if no ghosts can be seen and you are not carrying a ghost
+        	if (ghosts.isEmpty() && curr.state == 0) {
+        		System.out.println("MOVE 8000 4500");
+        	} else if (curr.state == 1) { //if carrying a ghost
+        		//if ((this.myTeamID == 0 && distanceTo(0,0,curr.x,curr.y) < 1600) 
+        		//		|| (this.myTeamID == 1 && distanceTo(16001,9001,curr.x,curr.y) < 1600)) {
+        		if (distanceTo(16001*this.myTeamID,9001*this.myTeamID,curr.x,curr.y) < 1600) { //a little hackier
+        			System.out.println("RELEASE");
+        		} else { //Move towards base
+        			System.out.println(String.format("MOVE %d %d", 16001*this.myTeamID, 9001*this.myTeamID));
+        		}
+        	} else {
+        		Ghost target = ghosts.get(0); //first in list
+        		double distance = distanceTo(target.x, target.y, curr.x, curr.y);
+        		if (900 <= distance && distance <= 1760) {
+        			System.out.println(String.format("BUST %d", target.entityID));//capture
+        		} else { //advance towards present location of target ghost
+        			System.out.println(String.format("MOVE %d %d", target.x, target.y));
+        		}
+        	}
         }
+	}
+	
+	public double distanceTo (int toX, int toY, int fromX, int fromY) {
+		return Math.sqrt(Math.pow((double)toX-fromX, 2) + Math.pow((double)toY-fromY, 2));
 	}
 	
 	public static void main(String[] args) {
@@ -85,8 +112,34 @@ class Player {
                 	p.ghosts.add(new Ghost(entityID, x, y, value));
                 	
                 } else if (entityType == p.myTeamID) {
+                	
+                	for (Buster a: p.allies) {
+                		//If I could have more files to put my classes in, I'd make getters for these
+                		if (a.entityID == entityID) {
+                			a.x = x;
+                			a.y = y;
+                			a.state = state;
+                			a.value = value;
+                			continue turnLoop;
+                		}
+                	}
+                	
                 	p.allies.add(new Buster(entityID, x, y, state, value, entityType));
+                	//I'm worried that I will need to change to order of the allies in the list
+                	//if the input decides to be a bitch and change up the order of the busters with each turn
                 } else {
+                	
+                	for (Buster f: p.foes) {
+                		//If I could have more files to put my classes in, I'd make getters for these
+                		if (f.entityID == entityID) {
+                			f.x = x;
+                			f.y = y;
+                			f.state = state;
+                			f.value = value;
+                			continue turnLoop;
+                		}
+                	}
+                	
                 	p.foes.add(new Buster(entityID, x, y, state, value, entityType));
                 }
             }
