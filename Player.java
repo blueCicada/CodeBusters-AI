@@ -36,18 +36,31 @@ class Player {
 		foes = new ArrayList<Buster>();
 	}
 	
+	/**
+	 * Step 1: Check if 
+	 */
+	public void dumbAI() {
+        for (int i = 0; i < this.bustersPerPlayer; i++) {
+
+            // Write an action using System.out.println()
+            // To debug: System.err.println("Debug messages...");
+            System.out.println("MOVE 8000 4500"); // MOVE x y | BUST id | RELEASE
+        }
+	}
+	
 	public static void main(String[] args) {
 		Scanner in = new Scanner(System.in);
 		
-		int b = in.nextInt();
-        int g = in.nextInt();
-        int m = in.nextInt();
+		int bu = in.nextInt();
+        int gh = in.nextInt();
+        int my = in.nextInt();
         
-        Player p = new Player(b, g, m);
+        Player p = new Player(bu, gh, my);
         
         // game loop
         while (true) {
             int entities = in.nextInt(); // the number of busters and ghosts visible to you
+            turnLoop:
             for (int i = 0; i < entities; i++) {
             	int entityID = in.nextInt();
                 int x = in.nextInt();
@@ -56,24 +69,34 @@ class Player {
                 int state = in.nextInt();
                 int value = in.nextInt();
                 
+                //updating our arrays
                 if (entityType == GHOST) {
+                	
+                	for (Ghost g: p.ghosts) {
+                		//If I could have more files to put my classes in, I'd make getters for these
+                		if (g.entityID == entityID) {
+                			g.x = x;
+                			g.y = y;
+                			g.value = value;
+                			continue turnLoop;
+                		}
+                	}
+                	
                 	p.ghosts.add(new Ghost(entityID, x, y, value));
+                	
                 } else if (entityType == p.myTeamID) {
                 	p.allies.add(new Buster(entityID, x, y, state, value, entityType));
                 } else {
                 	p.foes.add(new Buster(entityID, x, y, state, value, entityType));
                 }
             }
-            for (int i = 0; i < p.bustersPerPlayer; i++) {
-
-                // Write an action using System.out.println()
-                // To debug: System.err.println("Debug messages...");
-                System.out.println("MOVE 8000 4500"); // MOVE x y | BUST id | RELEASE
-            }
+            p.dumbAI();
         }
 	}
 
 }
+
+//entityID and team do not change
 
 class Entity {
 	int entityID; // buster id or ghost id
