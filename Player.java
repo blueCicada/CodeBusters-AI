@@ -44,8 +44,12 @@ class Player {
         // To debug: System.err.println("Debug messages...");
 		// MOVE x y | BUST id | RELEASE
 		
+		System.err.println("initiate AI");
+		System.err.println(this.bustersPerPlayer);
+		
         for (int i = 0; i < this.bustersPerPlayer; i++) {
         	
+        	System.err.println(String.format("Buster %d reporting for duty", i));
         	Buster curr = allies.get(i); //presumably
         	
         	//move to centre of arena if no ghosts can be seen and you are not carrying a ghost
@@ -69,6 +73,7 @@ class Player {
         		}
         	}
         }
+        System.err.println("what the fuck");
 	}
 	
 	public double distanceTo (int toX, int toY, int fromX, int fromY) {
@@ -89,6 +94,7 @@ class Player {
             int entities = in.nextInt(); // the number of busters and ghosts visible to you
             turnLoop:
             for (int i = 0; i < entities; i++) {
+            	System.err.println("fuck");
             	int entityID = in.nextInt();
                 int x = in.nextInt();
                 int y = in.nextInt();
