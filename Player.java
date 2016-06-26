@@ -26,7 +26,7 @@ class Player {
 		this.bustersPerPlayer = bustersPerPlayer;
 	}*/
 	
-	public Player (int myTeamID, int ghostCount, int bustersPerPlayer) {
+	public Player (int bustersPerPlayer, int ghostCount, int myTeamID) {
 		this.myTeamID = myTeamID;
 		this.ghostCount = ghostCount;
 		this.bustersPerPlayer = bustersPerPlayer;
