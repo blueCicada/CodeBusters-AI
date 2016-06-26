@@ -49,13 +49,16 @@ class Player {
 		
         for (int i = 0; i < this.bustersPerPlayer; i++) {
         	
-        	System.err.println(String.format("Buster %d reporting for duty", i));
+        	System.err.println(String.format("\nBuster %d reporting for duty", i));
         	Buster curr = allies.get(i); //presumably
         	
         	//move to centre of arena if no ghosts can be seen and you are not carrying a ghost
         	if (ghosts.isEmpty() && curr.state == 0) {
+        		System.err.println("I can't see anything!");
         		System.out.println("MOVE 8000 4500");
-        	} else if (curr.state == 1) { //if carrying a ghost
+        		
+        	} else if (curr.state == 1) { //if carrying a ghost, return it to base
+        		System.err.println("Carrying ghost lol");
         		//if ((this.myTeamID == 0 && distanceTo(0,0,curr.x,curr.y) < 1600) 
         		//		|| (this.myTeamID == 1 && distanceTo(16001,9001,curr.x,curr.y) < 1600)) {
         		if (distanceTo(16001*this.myTeamID,9001*this.myTeamID,curr.x,curr.y) < 1600) { //a little hackier
@@ -63,17 +66,23 @@ class Player {
         		} else { //Move towards base
         			System.out.println(String.format("MOVE %d %d", 16001*this.myTeamID, 9001*this.myTeamID));
         		}
-        	} else {
+        		
+        	} else { //chase or bust ghost
         		Ghost target = ghosts.get(0); //first in list
         		double distance = distanceTo(target.x, target.y, curr.x, curr.y);
+        		System.err.println(String.format("I am located at (%d, %d)", curr.x, curr.y));
+        		System.err.println(String.format("Targeting ghost %d, located at (%d, %d)", 
+        				target.entityID, target.x, target.y));
+        		System.err.println(String.format("According to my calculations, distance is %f", distance));
         		if (900 <= distance && distance <= 1760) {
+        			System.err.println(String.format("Attempting to capture ghost %d", target.entityID));
         			System.out.println(String.format("BUST %d", target.entityID));//capture
         		} else { //advance towards present location of target ghost
         			System.out.println(String.format("MOVE %d %d", target.x, target.y));
         		}
         	}
         }
-        System.err.println("what the fuck");
+        //System.err.println("what the fuck");
 	}
 	
 	public double distanceTo (int toX, int toY, int fromX, int fromY) {
@@ -94,7 +103,7 @@ class Player {
             int entities = in.nextInt(); // the number of busters and ghosts visible to you
             turnLoop:
             for (int i = 0; i < entities; i++) {
-            	System.err.println("fuck");
+            	//System.err.println("fuck");
             	int entityID = in.nextInt();
                 int x = in.nextInt();
                 int y = in.nextInt();
@@ -126,6 +135,16 @@ class Player {
                 			a.y = y;
                 			a.state = state;
                 			a.value = value;
+                			if (a.state == 1) { //this buster is carrying a ghost
+                				for (Iterator<Ghost> iterator = p.ghosts.iterator(); iterator.hasNext();) {
+                				    Ghost g = iterator.next();
+                				    if (g.entityID == value) {
+                				        // Remove the current element from the iterator and the list.
+                				        iterator.remove();
+                				        continue turnLoop;
+                				    }
+                				}
+                			}
                 			continue turnLoop;
                 		}
                 	}
