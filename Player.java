@@ -55,12 +55,19 @@ class Player {
         	//move to centre of arena if no ghosts can be seen and you are not carrying a ghost
         	if (ghosts.isEmpty() && curr.state == 0) {
         		System.err.println("I can't see anything!");
-        		if (curr.x == 8000 && 4500) {
-        			
-        		} else {
-        			
+        		
+        		//de facto centre coordinates
+        		int centreX = 1556+9*800;
+        		int centreY = 1556+4*800;
+        		
+        		if (curr.x == centreX && curr.y == centreY 
+        				&& centreX == curr.destX && centreY == curr.destY) { //we are at the center, begin patrol
+        			curr.destX = curr.destY = -1;
+        			if (i % 2 == 1) spiralBeta(curr);//spiralAlpha(curr);
+        			else spiralBeta(curr);
+        		} else { //we need to move to the centre
+        			System.out.println(String.format("MOVE %d %d", centreX, centreY));
         		}
-        		System.out.println("MOVE 8000 4500");
         		
         	} else if (curr.state == 1) { //if carrying a ghost, return it to base
         		System.err.println("Carrying ghost lol");
@@ -88,6 +95,43 @@ class Player {
         	}
         }
         //System.err.println("what the fuck");
+	}
+	
+	public void spiralAlpha (Buster curr) {
+		
+	}
+	
+	public void spiralBeta (Buster curr) {
+		ArrayList<Coordinates> toVisit = new ArrayList<Coordinates>();
+		toVisit.add(new Coordinates(1556, 1556+4*800));
+		toVisit.add(new Coordinates(1556, 1556+8*800));
+		toVisit.add(new Coordinates(1556+17*800, 1556+8*800));
+		toVisit.add(new Coordinates(1556+17*800, 1556+5*800));
+		toVisit.add(new Coordinates(1556+800, 1556+5*800));
+		toVisit.add(new Coordinates(1556+800, 1556+7*800));
+		toVisit.add(new Coordinates(1556+16*800, 1556+7*800));
+		toVisit.add(new Coordinates(1556+16*800, 1556+6*800));
+		toVisit.add(new Coordinates(1556+2*800, 1556+6*800));
+		
+		if (curr.destX == -1 || (curr.destX == 1556+9*800 && curr.destY == 1556+4*800)) {
+			curr.destX = toVisit.get(0).x;
+			curr.destY = toVisit.get(0).y;
+		} else {
+			for (Coordinates pt: toVisit) {
+				int index = toVisit.indexOf(pt);
+				if (pt.x == curr.x && pt.y == curr.y) { //then we've reached our location
+					if (index == 8) { //8 is the last index for this list
+						curr.destX = 1556+9*800;
+						curr.destY = 1556+4*800;
+					} else {
+						Coordinates next = toVisit.get(toVisit.indexOf(pt) + 1);
+						curr.destX = next.x;
+						curr.destY = next.y;
+					}
+				} 
+			}
+		}
+		System.out.println(String.format("MOVE %d %d", curr.destX, curr.destY));
 	}
 	
 	public double distanceTo (int toX, int toY, int fromX, int fromY) {
@@ -197,6 +241,8 @@ class Buster extends Entity {
 	int team;//entityType;
 	int state; // For busters: 0=idle, 1=carrying a ghost.
 	int value; // For busters: Ghost id being carried.
+	int destX;
+	int destY;
 	
 	public Buster (int entityID, int x, int y, int state, int value, int entityType) {
 		super(entityID, x, y);
@@ -214,6 +260,35 @@ class Ghost extends Entity {
 		this.value = value;
 	}
 }
+
+class Coordinates {
+	int x;
+	int y;
+	
+	public Coordinates (int x, int y) {
+		this.x = x;
+		this.y = y;
+	}
+}
+
+/*class Matrix {
+	ArrayList<ArrayList<Coordinates>> matrix;
+	
+	public Matrix () {
+		matrix = new ArrayList<ArrayList<Coordinates>>();
+		
+		for (int i = 0; i < 17; i++) {
+			ArrayList<Coordinates> row = new ArrayList<Coordinates>();
+			for (int j = 0; j < 8; j++) {
+				row.add(new Coordinates(1555+i*800,1555+j*800));
+			}
+		}
+	}
+	
+	public Coordinates get (int matrixX, int matrixY) {
+		return matrix.get(matrixX).get(matrixY);
+	}
+}*/
 
 //Original
 /*import java.util.*;
