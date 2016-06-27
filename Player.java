@@ -55,6 +55,11 @@ class Player {
         	//move to centre of arena if no ghosts can be seen and you are not carrying a ghost
         	if (ghosts.isEmpty() && curr.state == 0) {
         		System.err.println("I can't see anything!");
+        		if (curr.x == 8000 && 4500) {
+        			
+        		} else {
+        			
+        		}
         		System.out.println("MOVE 8000 4500");
         		
         	} else if (curr.state == 1) { //if carrying a ghost, return it to base
