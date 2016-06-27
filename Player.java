@@ -60,14 +60,18 @@ class Player {
         		int centreX = 1556+9*800;
         		int centreY = 1556+4*800;
         		
-        		if (curr.x == centreX && curr.y == centreY 
+        		//spiral(curr);
+        		if (i % 2 == 1) spiralAlpha(curr);
+    			else spiralBeta(curr);
+        		/*if (curr.x == centreX && curr.y == centreY 
         				&& centreX == curr.destX && centreY == curr.destY) { //we are at the center, begin patrol
         			curr.destX = curr.destY = -1;
         			if (i % 2 == 1) spiralBeta(curr);//spiralAlpha(curr);
         			else spiralBeta(curr);
         		} else { //we need to move to the centre
+        			System.err("Advancing towards centre");
         			System.out.println(String.format("MOVE %d %d", centreX, centreY));
-        		}
+        		}*/
         		
         	} else if (curr.state == 1) { //if carrying a ghost, return it to base
         		System.err.println("Carrying ghost lol");
@@ -97,11 +101,52 @@ class Player {
         //System.err.println("what the fuck");
 	}
 	
-	public void spiralAlpha (Buster curr) {
+	public void spiralBeta (Buster curr) {
+		System.err.println("Patrolling");
+		ArrayList<Coordinates> betaSpiral = new ArrayList<Coordinates>();
+		betaSpiral.add(new Coordinates(1556+9*800, 1556+4*800)); //centre
+		betaSpiral.add(new Coordinates(1556, 1556+4*800));
+		betaSpiral.add(new Coordinates(1556, 1556+8*800));
+		betaSpiral.add(new Coordinates(1556+17*800, 1556+8*800));
+		betaSpiral.add(new Coordinates(1556+17*800, 1556+5*800));
+		betaSpiral.add(new Coordinates(1556+800, 1556+5*800));
+		betaSpiral.add(new Coordinates(1556+800, 1556+7*800));
+		betaSpiral.add(new Coordinates(1556+16*800, 1556+7*800));
+		betaSpiral.add(new Coordinates(1556+16*800, 1556+6*800));
+		betaSpiral.add(new Coordinates(1556+2*800, 1556+6*800));
 		
+		boolean initiatingPatrol = true;
+		
+		for (Coordinates pt: betaSpiral) {
+			if (pt.x == curr.destX && pt.y == curr.destY) {
+				initiatingPatrol = false;
+				break;
+			}
+		}
+		
+		if (initiatingPatrol == true) {
+			curr.destX = betaSpiral.get(0).x;
+			curr.destY = betaSpiral.get(0).y;
+		} else {
+			for (Coordinates pt: betaSpiral) {
+				int index = betaSpiral.indexOf(pt);
+				if (pt.x == curr.x && pt.y == curr.y) { //then we've reached our location
+					if (index == 9) { //9 is the last index for this list
+						curr.destX = 1556+9*800;
+						curr.destY = 1556+4*800;
+					} else {
+						Coordinates next = betaSpiral.get(betaSpiral.indexOf(pt) + 1);
+						curr.destX = next.x;
+						curr.destY = next.y;
+					}
+				} 
+			}
+		}
+		System.err.println(String.format("Bound for %d,%d", curr.destX, curr.destY));
+		System.out.println(String.format("MOVE %d %d", curr.destX, curr.destY));
 	}
 	
-	public void spiralBeta (Buster curr) {
+	/*public void spiralBeta (Buster curr) {
 		ArrayList<Coordinates> toVisit = new ArrayList<Coordinates>();
 		toVisit.add(new Coordinates(1556, 1556+4*800));
 		toVisit.add(new Coordinates(1556, 1556+8*800));
@@ -132,7 +177,7 @@ class Player {
 			}
 		}
 		System.out.println(String.format("MOVE %d %d", curr.destX, curr.destY));
-	}
+	}*/
 	
 	public double distanceTo (int toX, int toY, int fromX, int fromY) {
 		return Math.sqrt(Math.pow((double)toX-fromX, 2) + Math.pow((double)toY-fromY, 2));
