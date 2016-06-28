@@ -68,17 +68,23 @@ class Player {
         	System.err.println(String.format("\nBuster %d reporting for duty", i));
         	Buster curr = allies.get(i); //presumably
         	
-        	ArrayList<Buster> stunnableFoes = new ArrayList<Buster>(); //foes within stunning range
+        	ArrayList<Buster> stunnableFoes = new ArrayList<Buster>(); 
+        	//foes within stunning range which are not already stunned
         	for (Buster f : foes) {
-    			if (distanceTo(curr.x, curr.y, f.x, f.y) <= 1760) {
+    			if (distanceTo(curr.x, curr.y, f.x, f.y) <= 1760 && f.state != 2) {
     				stunnableFoes.add(f);
     			}
     		}
         	
         	if (curr.stunCooldown == 0 && curr.state != 1 && !stunnableFoes.isEmpty()) {
         		//if we are ready to stun, and we are not carrying a ghost, and there are enemies within stunning range
-        		System.out.println(String.format("STUN %d", stunnableFoes.get(0)));
-        	} else if (ghosts.isEmpty() && curr.state == 0) {
+        		curr.stunCooldown += 20;
+        		System.out.println(String.format("STUN %d %d", stunnableFoes.get(0).entityID, curr.stunCooldown));
+        	} else if (curr.state == 3) {//if currently busting a ghost and the above does not apply - 
+        		//then continue busting it
+        		System.err.println(String.format("Struggling with ghost %d", curr.value));
+        		System.out.println(String.format("BUST %d", curr.value));
+        	}else if (ghosts.isEmpty() && curr.state == 0) {
         		//if no ghosts can be seen and you are not carrying a ghost
         		System.err.println("I can't see anything!");
         		
@@ -111,7 +117,7 @@ class Player {
         		if (900 <= distance && distance <= 1760) {
         			System.err.println(String.format("Attempting to capture ghost %d", target.entityID));
         			System.out.println(String.format("BUST %d", target.entityID));//capture
-        		} else { //advance towards present location of target ghost
+        		} else if (distance >= 900) { //advance towards present location of target ghost if not too close
         			System.out.println(String.format("MOVE %d %d", target.x, target.y));
         		}
         	} else {
