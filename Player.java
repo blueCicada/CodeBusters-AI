@@ -79,12 +79,13 @@ class Player {
         	if (curr.stunCooldown == 0 && curr.state != 1 && !stunnableFoes.isEmpty()) {
         		//if we are ready to stun, and we are not carrying a ghost, and there are enemies within stunning range
         		curr.stunCooldown += 20;
-        		System.out.println(String.format("STUN %d %d", stunnableFoes.get(0).entityID, curr.stunCooldown));
+        		System.err.println(String.format("Stunning Buster %d", stunnableFoes.get(0).entityID));
+        		System.out.println(String.format("STUN %d", stunnableFoes.get(0).entityID));
         	} else if (curr.state == 3) {//if currently busting a ghost and the above does not apply - 
         		//then continue busting it
         		System.err.println(String.format("Struggling with ghost %d", curr.value));
         		System.out.println(String.format("BUST %d", curr.value));
-        	}else if (ghosts.isEmpty() && curr.state == 0) {
+        	} else if (ghosts.isEmpty() && curr.state == 0) {
         		//if no ghosts can be seen and you are not carrying a ghost
         		System.err.println("I can't see anything!");
         		
@@ -119,12 +120,15 @@ class Player {
         			System.out.println(String.format("BUST %d", target.entityID));//capture
         		} else if (distance >= 900) { //advance towards present location of target ghost if not too close
         			System.out.println(String.format("MOVE %d %d", target.x, target.y));
+        		} else {
+        			System.err.println("hurr durr");
+        			System.out.println("MOVE 8000 4500");
         		}
         	} else {
         		System.out.println("MOVE 8000 4500");
         	}
         }
-        //System.err.println("what the fuck");
+        System.err.println("come at me");
 	}
 	
 	public void spiralAlpha (Buster curr) {
