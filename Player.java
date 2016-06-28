@@ -242,6 +242,7 @@ class Player {
         // game loop
         while (true) {
             int entities = in.nextInt(); // the number of busters and ghosts visible to you
+            p.ghosts.clear();
             turnLoop:
             for (int i = 0; i < entities; i++) {
             	//System.err.println("fuck");
@@ -255,7 +256,7 @@ class Player {
                 //updating our arrays
                 if (entityType == GHOST) {
                 	
-                	for (Ghost g: p.ghosts) {
+                	/*for (Ghost g: p.ghosts) {
                 		//If I could have more files to put my classes in, I'd make getters for these
                 		if (g.entityID == entityID) {
                 			g.x = x;
@@ -263,7 +264,7 @@ class Player {
                 			g.value = value;
                 			continue turnLoop;
                 		}
-                	}
+                	}*/
                 	
                 	p.ghosts.add(new Ghost(entityID, x, y, value));
                 	
@@ -277,6 +278,10 @@ class Player {
                 			a.state = state;
                 			a.value = value;
                 			if (a.state == 1) { //this buster is carrying a ghost
+                				//this loop was intended to remove the carried ghost from the ghost list
+                				//but I've since changed my code to reconstruct the ghost list from scratch
+                				//every turn, so this may no longer be necessary
+                				/*
                 				for (Iterator<Ghost> iterator = p.ghosts.iterator(); iterator.hasNext();) {
                 				    Ghost g = iterator.next();
                 				    if (g.entityID == value) {
@@ -284,7 +289,7 @@ class Player {
                 				        iterator.remove();
                 				        continue turnLoop;
                 				    }
-                				}
+                				}*/
                 			}
                 			continue turnLoop;
                 		}
