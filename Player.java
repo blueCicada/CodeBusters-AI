@@ -2,6 +2,21 @@ import java.util.*;
 import java.io.*;
 import java.math.*;
 
+/**
+ * 
+ * @author blueCicada
+ * 
+ * Normally, the fields should always be made private,
+ * and only accessible through getters and setters
+ * 
+ * But since I'm forced to put everything in a single file,
+ * I don't want to bloat this code anymore than I need to.
+ * Any getters and setters would be just dumb one-liners
+ * 
+ * I am also the only person working on this code, so I find
+ * it easier to work this way.
+ *
+ */
 class Player {
 
 	//These constants are entity types
@@ -47,37 +62,40 @@ class Player {
 		System.err.println("initiate AI");
 		System.err.println(this.bustersPerPlayer);
 		
+		
         for (int i = 0; i < this.bustersPerPlayer; i++) {
         	
         	System.err.println(String.format("\nBuster %d reporting for duty", i));
         	Buster curr = allies.get(i); //presumably
         	
-        	//move to centre of arena if no ghosts can be seen and you are not carrying a ghost
-        	if (ghosts.isEmpty() && curr.state == 0) {
+        	ArrayList<Buster> stunnableFoes = new ArrayList<Buster>(); //foes within stunning range
+        	for (Buster f : foes) {
+    			if (distanceTo(curr.x, curr.y, f.x, f.y) <= 1760) {
+    				stunnableFoes.add(f);
+    			}
+    		}
+        	
+        	if (curr.stunCooldown == 0 && curr.state != 1 && !stunnableFoes.isEmpty()) {
+        		
+        		System.out.println(String.format("STUN %d", ));
+        	} else if (ghosts.isEmpty() && curr.state == 0) {
+        		//if no ghosts can be seen and you are not carrying a ghost
         		System.err.println("I can't see anything!");
         		
         		//de facto centre coordinates
         		int centreX = 1556+9*800;
         		int centreY = 1556+4*800;
         		
-        		//spiral(curr);
+
         		if (i % 2 == 1) spiralAlpha(curr);
     			else spiralBeta(curr);
-        		/*if (curr.x == centreX && curr.y == centreY 
-        				&& centreX == curr.destX && centreY == curr.destY) { //we are at the center, begin patrol
-        			curr.destX = curr.destY = -1;
-        			if (i % 2 == 1) spiralBeta(curr);//spiralAlpha(curr);
-        			else spiralBeta(curr);
-        		} else { //we need to move to the centre
-        			System.err("Advancing towards centre");
-        			System.out.println(String.format("MOVE %d %d", centreX, centreY));
-        		}*/
+        		
         		
         	} else if (curr.state == 1) { //if carrying a ghost, return it to base
         		System.err.println("Carrying ghost lol");
         		//if ((this.myTeamID == 0 && distanceTo(0,0,curr.x,curr.y) < 1600) 
         		//		|| (this.myTeamID == 1 && distanceTo(16001,9001,curr.x,curr.y) < 1600)) {
-        		if (distanceTo(16001*this.myTeamID,9001*this.myTeamID,curr.x,curr.y) < 1600) { //a little hackier
+        		if (distanceTo(16001*this.myTeamID,9001*this.myTeamID,curr.x,curr.y) <= 1600) { //a little hackier
         			System.out.println("RELEASE");
         		} else { //Move towards base
         			System.out.println(String.format("MOVE %d %d", 16001*this.myTeamID, 9001*this.myTeamID));
@@ -277,6 +295,7 @@ class Player {
                 			a.y = y;
                 			a.state = state;
                 			a.value = value;
+                			if (a.stunCooldown != 0) a.stunCooldown--;
                 			if (a.state == 1) { //this buster is carrying a ghost
                 				//this loop was intended to remove the carried ghost from the ghost list
                 				//but I've since changed my code to reconstruct the ghost list from scratch
@@ -335,14 +354,16 @@ class Entity {
 }
 
 class Buster extends Entity {
+	int stunCooldown;
 	int team;//entityType;
-	int state; // For busters: 0=idle, 1=carrying a ghost.
+	int state; // For busters: 0=idle, 1=carrying a ghost, 2=stunned, 3=in the process of trapping a ghost
 	int value; // For busters: Ghost id being carried.
 	int destX;
 	int destY;
 	
 	public Buster (int entityID, int x, int y, int state, int value, int entityType) {
 		super(entityID, x, y);
+		this.stunCooldown = 0;//if you ever decide to reconstruct the allies list from scratch, be careful with this
 		this.state = state;
 		this.value = value;
 		this.team = entityType; //should only be either TEAM_0_BUSTER or TEAM_1_BUSTER, should never be GHOST
