@@ -83,7 +83,7 @@ class Player {
         			System.out.println(String.format("MOVE %d %d", 16001*this.myTeamID, 9001*this.myTeamID));
         		}
         		
-        	} else { //chase or bust ghost
+        	} else if (!ghosts.isEmpty()){ //chase or bust ghost
         		Ghost target = ghosts.get(0); //first in list
         		double distance = distanceTo(target.x, target.y, curr.x, curr.y);
         		System.err.println(String.format("I am located at (%d, %d)", curr.x, curr.y));
@@ -96,9 +96,56 @@ class Player {
         		} else { //advance towards present location of target ghost
         			System.out.println(String.format("MOVE %d %d", target.x, target.y));
         		}
+        	} else {
+        		System.out.println("MOVE 8000 4500");
         	}
         }
         //System.err.println("what the fuck");
+	}
+	
+	public void spiralAlpha (Buster curr) {
+		System.err.println("Patrolling");
+		ArrayList<Coordinates> alphaSpiral = new ArrayList<Coordinates>();
+		alphaSpiral.add(new Coordinates(1556+9*800, 1556+4*800)); //centre
+		alphaSpiral.add(new Coordinates(1556+17*800, 1556+4*800));
+		alphaSpiral.add(new Coordinates(1556+17*800, 1556));
+		alphaSpiral.add(new Coordinates(1556, 1556));
+		alphaSpiral.add(new Coordinates(1556, 1556+3*800));
+		alphaSpiral.add(new Coordinates(1556+16*800, 1556+3*800));
+		alphaSpiral.add(new Coordinates(1556+16*800, 1556+800));
+		alphaSpiral.add(new Coordinates(1556+800, 1556+800));
+		alphaSpiral.add(new Coordinates(1556+800, 1556+2*800));
+		alphaSpiral.add(new Coordinates(1556+15*800, 1556+2*800));
+		
+		boolean initiatingPatrol = true;
+		
+		for (Coordinates pt: alphaSpiral) {
+			if (pt.x == curr.destX && pt.y == curr.destY) {
+				initiatingPatrol = false;
+				break;
+			}
+		}
+		
+		if (initiatingPatrol == true) {
+			curr.destX = alphaSpiral.get(0).x;
+			curr.destY = alphaSpiral.get(0).y;
+		} else {
+			for (Coordinates pt: alphaSpiral) {
+				int index = alphaSpiral.indexOf(pt);
+				if (pt.x == curr.x && pt.y == curr.y) { //then we've reached our location
+					if (index == 9) { //9 is the last index for this list
+						curr.destX = 1556+9*800;
+						curr.destY = 1556+4*800;
+					} else {
+						Coordinates next = alphaSpiral.get(alphaSpiral.indexOf(pt) + 1);
+						curr.destX = next.x;
+						curr.destY = next.y;
+					}
+				} 
+			}
+		}
+		System.err.println(String.format("Bound for %d,%d", curr.destX, curr.destY));
+		System.out.println(String.format("MOVE %d %d", curr.destX, curr.destY));
 	}
 	
 	public void spiralBeta (Buster curr) {
