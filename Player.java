@@ -81,6 +81,8 @@ class Player {
         		curr.stunCooldown += 20;
         		System.err.println(String.format("Stunning Buster %d", stunnableFoes.get(0).entityID));
         		System.out.println(String.format("STUN %d", stunnableFoes.get(0).entityID));
+        		//assuming that the stun worked, the following line should be okay:
+        		stunnableFoes.get(0).state = 2; //we set the state manually so other allies don't get confused
         	} else if (curr.state == 3) {//if currently busting a ghost and the above does not apply - 
         		//then continue busting it
         		System.err.println(String.format("Struggling with ghost %d", curr.value));
@@ -367,7 +369,7 @@ class Buster extends Entity {
 	int stunCooldown;
 	int team;//entityType;
 	int state; // For busters: 0=idle, 1=carrying a ghost, 2=stunned, 3=in the process of trapping a ghost
-	int value; // For busters: Ghost id being carried.
+	int value; // For busters: Ghost id being carried. According to DeafGecko, this is -1 if not stunned or carrying
 	int destX;
 	int destY;
 	
