@@ -76,8 +76,8 @@ class Player {
     		}
         	
         	if (curr.stunCooldown == 0 && curr.state != 1 && !stunnableFoes.isEmpty()) {
-        		
-        		System.out.println(String.format("STUN %d", ));
+        		//if we are ready to stun, and we are not carrying a ghost, and there are enemies within stunning range
+        		System.out.println(String.format("STUN %d", stunnableFoes.get(0)));
         	} else if (ghosts.isEmpty() && curr.state == 0) {
         		//if no ghosts can be seen and you are not carrying a ghost
         		System.err.println("I can't see anything!");
@@ -408,6 +408,30 @@ class Coordinates {
 	}
 }*/
 
+//At the moment, I'm thinking of having some PQs to store
+//what entities can be seen by the current buster
+//For each iteration of the dumbAI() loop, we create a new
+//PQ, because different AIs will see different things
+//So we can have stunnableFoes as a PQ
+//and also have a visibleGhosts PQ
+//Actually, we might even make the ghosts list just a PQ
+//That way, a buster can still chase a ghost that it cannot see
+//(but perhaps another buster can see it)
+//Hopefully, this will allow for more efficient behaviour,
+//as each buster will go for the entity closest to it
+//(whether it's trying to stun a foe or trap a ghost)
+//However, this also means that the busters will tend to work
+//independently, rather than cooperating to capture a ghost faster
+//which may or may not be a good thing
+/*class distanceComparator<Entity> implements Comparator<Entity> {
+   
+   @Override
+   public int compare (Entity entity1, Entity entity2) {
+      if 
+   }
+   
+}*/
+
 //Original
 /*import java.util.*;
 import java.io.*;
@@ -444,3 +468,6 @@ import java.math.*;
         }
     }
 }*/
+
+
+
