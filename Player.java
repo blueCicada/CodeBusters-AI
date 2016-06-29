@@ -87,7 +87,11 @@ class Player {
         		//then continue busting it
         		System.err.println(String.format("Struggling with ghost %d", curr.value));
         		System.out.println(String.format("BUST %d", curr.value));
-        		if (curr.state == 1) getGhost(curr.value).busted = true; //we have now busted the ghost
+        		if (curr.state == 1) {
+        			getGhost(curr.value).busted = true; //we have now busted the ghost
+        			System.err.println("I got da fucking ghost");
+        		}
+        		System.err.println("Are you with us");
     			//be mindful of this line if you ever need to mix up the control flow
     			//there is another control block below which catches the more general
     			//case of carrying a ghost
@@ -124,7 +128,11 @@ class Player {
         		if (900 <= distance && distance <= 1760 && target.busted == false) {
         			System.err.println(String.format("Attempting to capture ghost %d", target.entityID));
         			System.out.println(String.format("BUST %d", target.entityID));//capture
-        			if (curr.state == 1) target.busted = true; //we have now busted the ghost
+        			if (curr.state == 1) {
+        				target.busted = true; //we have now busted the ghost
+        				System.err.println("The ghost is fucking mine");
+        			}
+        			System.err.println("Are you with me");
         			//be mindful of this line if you ever need to mix up the control flow
         			//there is another control block above which catches the more general
         			//case of carrying a ghost
