@@ -87,14 +87,7 @@ class Player {
         		//then continue busting it
         		System.err.println(String.format("Struggling with ghost %d", curr.value));
         		System.out.println(String.format("BUST %d", curr.value));
-        		if (curr.state == 1) {
-        			getGhost(curr.value).busted = true; //we have now busted the ghost
-        			System.err.println("I got da fucking ghost");
-        		}
-        		System.err.println("Are you with us");
-    			//be mindful of this line if you ever need to mix up the control flow
-    			//there is another control block below which catches the more general
-    			//case of carrying a ghost
+        		//TODO
         	} else if (ghosts.isEmpty() && curr.state == 0) {
         		//if no ghosts can be seen and you are not carrying a ghost
         		System.err.println("I can't see anything!");
@@ -128,14 +121,7 @@ class Player {
         		if (900 <= distance && distance <= 1760 && target.busted == false) {
         			System.err.println(String.format("Attempting to capture ghost %d", target.entityID));
         			System.out.println(String.format("BUST %d", target.entityID));//capture
-        			if (curr.state == 1) {
-        				target.busted = true; //we have now busted the ghost
-        				System.err.println("The ghost is fucking mine");
-        			}
-        			System.err.println("Are you with me");
-        			//be mindful of this line if you ever need to mix up the control flow
-        			//there is another control block above which catches the more general
-        			//case of carrying a ghost
+        			//TODO
         		} else if (distance >= 900) { //advance towards present location of target ghost if not too close
         			System.out.println(String.format("MOVE %d %d", target.x, target.y));
         		} else {
@@ -296,7 +282,10 @@ class Player {
         // game loop
         while (true) {
             int entities = in.nextInt(); // the number of busters and ghosts visible to you
-            p.ghosts.clear();
+            //p.ghosts.clear();
+            for (Ghost g: p.ghosts) {
+            	g.radarCount++;
+            }
             turnLoop:
             for (int i = 0; i < entities; i++) {
             	//System.err.println("fuck");
@@ -310,15 +299,16 @@ class Player {
                 //updating our arrays
                 if (entityType == GHOST) {
                 	
-                	/*for (Ghost g: p.ghosts) {
+                	for (Ghost g: p.ghosts) {
                 		//If I could have more files to put my classes in, I'd make getters for these
                 		if (g.entityID == entityID) {
                 			g.x = x;
                 			g.y = y;
                 			g.value = value;
+                			g.radarCount = 0;
                 			continue turnLoop;
                 		}
-                	}*/
+                	}
                 	
                 	p.ghosts.add(new Ghost(entityID, x, y, value));
                 	
@@ -333,10 +323,12 @@ class Player {
                 			a.value = value;
                 			if (a.stunCooldown != 0) a.stunCooldown--;
                 			if (a.state == 1) { //this buster is carrying a ghost
+                				
                 				//this loop was intended to remove the carried ghost from the ghost list
                 				//but I've since changed my code to reconstruct the ghost list from scratch
                 				//every turn, so this may no longer be necessary
-                				/*
+                				
+                				//EDIT: it has now been put back in, so I will require the loop once again
                 				for (Iterator<Ghost> iterator = p.ghosts.iterator(); iterator.hasNext();) {
                 				    Ghost g = iterator.next();
                 				    if (g.entityID == value) {
@@ -344,7 +336,7 @@ class Player {
                 				        iterator.remove();
                 				        continue turnLoop;
                 				    }
-                				}*/
+                				}
                 			}
                 			continue turnLoop;
                 		}
@@ -362,6 +354,22 @@ class Player {
                 			f.y = y;
                 			f.state = state;
                 			f.value = value;
+                			if (f.state == 1) { //this buster is carrying a ghost
+                				
+                				//this loop was intended to remove the carried ghost from the ghost list
+                				//but I've since changed my code to reconstruct the ghost list from scratch
+                				//every turn, so this may no longer be necessary
+                				
+                				//EDIT: it has now been put back in, so I will require the loop once again
+                				for (Iterator<Ghost> iterator = p.ghosts.iterator(); iterator.hasNext();) {
+                				    Ghost g = iterator.next();
+                				    if (g.entityID == value) {
+                				        // Remove the current element from the iterator and the list.
+                				        iterator.remove();
+                				        continue turnLoop;
+                				    }
+                				}
+                			}
                 			continue turnLoop;
                 		}
                 	}
@@ -369,6 +377,15 @@ class Player {
                 	p.foes.add(new Buster(entityID, x, y, state, value, entityType));
                 }
             }
+            //hope this is the right place to put it
+            int threshold = 1; //max number of turns off the radar a ghost can have before it falls off the list
+            for (Iterator<Ghost> iterator = p.ghosts.iterator(); iterator.hasNext();) {
+			    Ghost g = iterator.next();
+			    if (g.radarCount > threshold) {
+			        // Remove the current element from the iterator and the list.
+			        iterator.remove();
+			    }
+			}
             p.dumbAI();
         }
 	}
@@ -393,9 +410,12 @@ class Buster extends Entity {
 	int stunCooldown;
 	int team;//entityType;
 	int state; // For busters: 0=idle, 1=carrying a ghost, 2=stunned, 3=in the process of trapping a ghost
-	int value; // For busters: Ghost id being carried. According to DeafGecko, this is -1 if not stunned or carrying
+	int value; //For busters:
+				//If the buster is carrying or attempting to trap a ghost, that ghost's id.
+				//If the buster is stunned the number of turns until he can move again.
+				//According to DeafGecko, this is -1 if not stunned or carrying
 	int destX;
-	int destY;
+	int destY; //Coords of current target destination
 	
 	public Buster (int entityID, int x, int y, int state, int value, int entityType) {
 		super(entityID, x, y);
@@ -409,11 +429,13 @@ class Buster extends Entity {
 class Ghost extends Entity {
 	boolean busted; //has this ghost been busted in the current turn?
 	int value; //For ghosts: number of busters attempting to trap this ghost.
+	int radarCount; //number of turns this ghost has been off the radar for (since the last sighting)
 	
 	public Ghost (int entityID, int x, int y, int value) {
 		super(entityID, x, y);
 		this.value = value;
 		this.busted = false;
+		this.radarCount = 0;
 	}
 }
 
