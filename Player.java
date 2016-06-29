@@ -87,6 +87,10 @@ class Player {
         		//then continue busting it
         		System.err.println(String.format("Struggling with ghost %d", curr.value));
         		System.out.println(String.format("BUST %d", curr.value));
+        		if (curr.state == 1) getGhost(curr.value).busted = true; //we have now busted the ghost
+    			//be mindful of this line if you ever need to mix up the control flow
+    			//there is another control block below which catches the more general
+    			//case of carrying a ghost
         	} else if (ghosts.isEmpty() && curr.state == 0) {
         		//if no ghosts can be seen and you are not carrying a ghost
         		System.err.println("I can't see anything!");
