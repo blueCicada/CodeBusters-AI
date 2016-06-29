@@ -127,6 +127,7 @@ class Player {
         			System.out.println("MOVE 8000 4500");
         		}
         	} else {
+        	    System.err.println("Defaulting, fuck it");
         		System.out.println("MOVE 8000 4500");
         	}
         }
