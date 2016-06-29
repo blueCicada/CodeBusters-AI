@@ -260,6 +260,14 @@ class Player {
 		System.out.println(String.format("MOVE %d %d", curr.destX, curr.destY));
 	}*/
 	
+	public Ghost getGhost (int id) {
+		for (Ghost g: ghosts) {
+			if (g.entityID == id) return g;
+		}
+		System.err.println("THIS SHOULD NEVER HAPPEN MAYDAY MAYDAY");
+		return null;
+	}
+	
 	public double distanceTo (int toX, int toY, int fromX, int fromY) {
 		return Math.sqrt(Math.pow((double)toX-fromX, 2) + Math.pow((double)toY-fromY, 2));
 	}
