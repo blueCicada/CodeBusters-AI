@@ -83,7 +83,7 @@ class Player {
         		System.out.println(String.format("STUN %d", stunnableFoes.get(0).entityID));
         		//assuming that the stun worked, the following line should be okay:
         		stunnableFoes.get(0).state = 2; //we set the state manually so other allies don't get confused
-        	} else if (curr.state == 3) {//if currently busting a ghost and the above does not apply - 
+        	} else if (curr.state == 3 && getGhost(curr.value).busted == false) {//if currently busting a ghost and the above does not apply - 
         		//then continue busting it
         		System.err.println(String.format("Struggling with ghost %d", curr.value));
         		System.out.println(String.format("BUST %d", curr.value));
@@ -117,9 +117,13 @@ class Player {
         		System.err.println(String.format("Targeting ghost %d, located at (%d, %d)", 
         				target.entityID, target.x, target.y));
         		System.err.println(String.format("According to my calculations, distance is %f", distance));
-        		if (900 <= distance && distance <= 1760) {
+        		if (900 <= distance && distance <= 1760 && target.busted == false) {
         			System.err.println(String.format("Attempting to capture ghost %d", target.entityID));
         			System.out.println(String.format("BUST %d", target.entityID));//capture
+        			if (curr.state == 1) target.busted = true; //we have now busted the ghost
+        			//be mindful of this line if you ever need to mix up the control flow
+        			//there is another control block above which catches the more general
+        			//case of carrying a ghost
         		} else if (distance >= 900) { //advance towards present location of target ghost if not too close
         			System.out.println(String.format("MOVE %d %d", target.x, target.y));
         		} else {
@@ -383,11 +387,13 @@ class Buster extends Entity {
 }
 
 class Ghost extends Entity {
+	boolean busted; //has this ghost been busted in the current turn?
 	int value; //For ghosts: number of busters attempting to trap this ghost.
 	
 	public Ghost (int entityID, int x, int y, int value) {
 		super(entityID, x, y);
 		this.value = value;
+		this.busted = false;
 	}
 }
 
