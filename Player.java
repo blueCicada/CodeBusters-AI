@@ -378,7 +378,7 @@ class Player {
                 }
             }
             //hope this is the right place to put it
-            int threshold = 1; //max number of turns off the radar a ghost can have before it falls off the list
+            int threshold = 0; //max number of turns off the radar a ghost can have before it falls off the list
             for (Iterator<Ghost> iterator = p.ghosts.iterator(); iterator.hasNext();) {
 			    Ghost g = iterator.next();
 			    if (g.radarCount > threshold) {
