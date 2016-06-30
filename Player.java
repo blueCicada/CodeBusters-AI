@@ -15,6 +15,10 @@ import java.math.*;
  * 
  * I am also the only person working on this code, so I find
  * it easier to work this way.
+ * 
+ * I'd also normally use the strategy pattern to make it easy
+ * to switch between AIs, but that's not going to happen in
+ * this single file.
  *
  */
 class Player {
@@ -27,6 +31,7 @@ class Player {
 	private int bustersPerPlayer; // the number of busters you control
     private int ghostCount; // the number of ghosts on the map
     private int myTeamID; // if this is 0, your base is on the top left of the map, if it is one, on the bottom right
+    private int turnCount; //does not count enemy turns
     
 	
 	private List<Ghost> ghosts;
@@ -64,8 +69,26 @@ class Player {
 		}
 	}
 	
+
 	/**
-	 * Step 1: Check if 
+	 * Does not exactly replicate Romka's AI's behaviour (I couldn't even if I tried)
+	 * But retains some elements such as:
+	 * 	- rushing out at the start to claim territory
+	 *  - prioritising ghosts with low stamina
+	 *  - endgame escort + sentry at base
+	 */
+	public void romkaClone1() {
+		System.err.println("Romka Clone 1");
+		
+		for (int i = 0; i < this.bustersPerPlayer; i++) { Buster curr = allies.get(i);
+		
+		}
+	}
+	
+	/**
+	 * Step 1: Check if we can stun any enemies (and we are not carrying a ghost_
+	 * 		Might actually be better if you do it regardless of whether you're carrying a ghost
+	 * Step 2: Check
 	 */
 	public void dumbAI() {
 		// Write an action using System.out.println()
@@ -287,6 +310,7 @@ class Player {
         // game loop
         while (true) {
             int entities = in.nextInt(); // the number of busters and ghosts visible to you
+            p.turnCount++;
             p.ghosts.clear();
             /*for (Buster f: p.foes ){
             	f.radarCount++;
@@ -364,9 +388,12 @@ class Player {
                 	p.foes.add(new Buster(entityID, x, y, state, value, entityType));
                 }
             }
+            //p.sittingDuckAI();
             p.dumbAI();
+            //p.romkaClone1();
         }
 	}
+
 
 }
 
