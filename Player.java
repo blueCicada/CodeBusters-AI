@@ -275,9 +275,9 @@ class Player {
         while (true) {
             int entities = in.nextInt(); // the number of busters and ghosts visible to you
             p.ghosts.clear();
-            /*for (Buster f: p.foes ){
+            for (Buster f: p.foes ){
             	f.radarCount++;
-            }*/
+            }
             turnLoop:
             for (int i = 0; i < entities; i++) {
             	//System.err.println("fuck");
@@ -343,7 +343,7 @@ class Player {
                 			f.y = y;
                 			f.state = state;
                 			f.value = value;
-                			//f.radarCount = 0;
+                			f.radarCount = 0;
                 			continue turnLoop;
                 		}
                 	}
@@ -378,7 +378,7 @@ class Buster extends Entity {
 	int value; // For busters: Ghost id being carried. According to DeafGecko, this is -1 if not stunned or carrying
 	int destX;
 	int destY;
-	//int radarCount;
+	int radarCount;
 	
 	public Buster (int entityID, int x, int y, int state, int value, int entityType) {
 		super(entityID, x, y);
@@ -386,7 +386,7 @@ class Buster extends Entity {
 		this.state = state;
 		this.value = value;
 		this.team = entityType; //should only be either TEAM_0_BUSTER or TEAM_1_BUSTER, should never be GHOST
-		//this.radarCount = 0;
+		this.radarCount = 0;
 	}
 }
 
