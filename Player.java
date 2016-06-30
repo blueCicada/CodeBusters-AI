@@ -34,8 +34,9 @@ class Player {
     private int turnCount; //does not count enemy turns
     
 	
-	private List<Ghost> ghosts;
-	private List<Buster> allies;
+	//private List<Ghost> ghosts;
+	private PriorityQueue<Ghost> ghosts;
+    private List<Buster> allies;
 	private List<Buster> foes;
 	
 	/*public void setTeam (int myTeamID) {
@@ -51,7 +52,7 @@ class Player {
 		this.ghostCount = ghostCount;
 		this.bustersPerPlayer = bustersPerPlayer;
 		
-		ghosts = new ArrayList<Ghost>();
+		ghosts = new PriorityQueue<Ghost>(25, new StaminaComparator());//ArrayList<Ghost>();
 		allies = new ArrayList<Buster>();
 		foes = new ArrayList<Buster>();
 	}
@@ -147,7 +148,8 @@ class Player {
         		}
         		
         	} else if (!ghosts.isEmpty()){ //chase or bust ghost
-        		Ghost target = ghosts.get(0); //first in list
+        		//Ghost target = ghosts.get(0); //first in list
+        		Ghost target = ghosts.peek();
         		double distance = distanceTo(target.x, target.y, curr.x, curr.y);
         		System.err.println(String.format("I am located at (%d, %d)", curr.x, curr.y));
         		System.err.println(String.format("Targeting ghost %d, located at (%d, %d)", 
@@ -338,7 +340,7 @@ class Player {
                 		}
                 	}*/
                 	
-                	p.ghosts.add(new Ghost(entityID, x, y, value));
+                	p.ghosts.add(new Ghost(entityID, x, y, state, value));
                 	
                 } else if (entityType == p.myTeamID) {
                 	
@@ -432,9 +434,11 @@ class Buster extends Entity {
 
 class Ghost extends Entity {
 	int value; //For ghosts: number of busters attempting to trap this ghost.
+	int state; //For ghosts: remaining stamina points.
 	
-	public Ghost (int entityID, int x, int y, int value) {
+	public Ghost (int entityID, int x, int y, int state, int value) {
 		super(entityID, x, y);
+		this.state = state;
 		this.value = value;
 	}
 }
@@ -483,7 +487,7 @@ class Coordinates {
 //However, this also means that the busters will tend to work
 //independently, rather than cooperating to capture a ghost faster
 //which may or may not be a good thing
-/*class distanceComparator<Entity> implements Comparator<Entity> {
+/*class DistanceComparator implements Comparator<Entity> {
    
    @Override
    public int compare (Entity entity1, Entity entity2) {
@@ -491,6 +495,16 @@ class Coordinates {
    }
    
 }*/
+class StaminaComparator implements Comparator<Ghost> {
+	   
+	   @Override
+	   public int compare (Ghost ghost1, Ghost ghost2) {
+	      if (ghost1.state < ghost2.state) return -1;
+	      if (ghost1.state > ghost2.state) return 1;
+	      return 0;
+	   }
+	   
+}
 
 //Original
 /*import java.util.*;
