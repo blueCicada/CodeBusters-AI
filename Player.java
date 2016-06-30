@@ -138,7 +138,7 @@ class Player {
 	public void spiralAlpha (Buster curr) {
 		System.err.println("Patrolling");
 		ArrayList<Coordinates> alphaSpiral = new ArrayList<Coordinates>();
-		alphaSpiral.add(new Coordinates(1556+9*800, 1556+4*800)); //centre
+		alphaSpiral.add(new Coordinates(1556+9*800+2200, 1556+4*800)); //centre
 		alphaSpiral.add(new Coordinates(1556+17*800, 1556+4*800));
 		alphaSpiral.add(new Coordinates(1556+17*800, 1556));
 		alphaSpiral.add(new Coordinates(1556, 1556));
@@ -183,7 +183,7 @@ class Player {
 	public void spiralBeta (Buster curr) {
 		System.err.println("Patrolling");
 		ArrayList<Coordinates> betaSpiral = new ArrayList<Coordinates>();
-		betaSpiral.add(new Coordinates(1556+9*800, 1556+4*800)); //centre
+		betaSpiral.add(new Coordinates(1556+9*800-2200, 1556+4*800)); //centre
 		betaSpiral.add(new Coordinates(1556, 1556+4*800));
 		betaSpiral.add(new Coordinates(1556, 1556+8*800));
 		betaSpiral.add(new Coordinates(1556+17*800, 1556+8*800));
@@ -275,6 +275,9 @@ class Player {
         while (true) {
             int entities = in.nextInt(); // the number of busters and ghosts visible to you
             p.ghosts.clear();
+            /*for (Buster f: p.foes ){
+            	f.radarCount++;
+            }*/
             turnLoop:
             for (int i = 0; i < entities; i++) {
             	//System.err.println("fuck");
@@ -340,6 +343,7 @@ class Player {
                 			f.y = y;
                 			f.state = state;
                 			f.value = value;
+                			//f.radarCount = 0;
                 			continue turnLoop;
                 		}
                 	}
@@ -374,6 +378,7 @@ class Buster extends Entity {
 	int value; // For busters: Ghost id being carried. According to DeafGecko, this is -1 if not stunned or carrying
 	int destX;
 	int destY;
+	//int radarCount;
 	
 	public Buster (int entityID, int x, int y, int state, int value, int entityType) {
 		super(entityID, x, y);
@@ -381,6 +386,7 @@ class Buster extends Entity {
 		this.state = state;
 		this.value = value;
 		this.team = entityType; //should only be either TEAM_0_BUSTER or TEAM_1_BUSTER, should never be GHOST
+		//this.radarCount = 0;
 	}
 }
 
