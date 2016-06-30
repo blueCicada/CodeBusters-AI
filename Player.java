@@ -128,7 +128,8 @@ class Player {
         		}
         	} else {
         	    System.err.println("Defaulting, fuck it");
-        		System.out.println("MOVE 8000 4500");
+        		//System.out.println("MOVE 8000 4500");
+        	    System.out.println(String.format("MOVE %d %d", ((~myTeamID)&00000001)*16001, ((~myTeamID)&00000001)*8001));
         	}
         }
         System.err.println("come at me");
