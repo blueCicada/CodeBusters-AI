@@ -52,6 +52,19 @@ class Player {
 	}
 	
 	/**
+	 * An AI that does literally nothing except sit
+	 * Only use for testing purposes
+	 * (eg. testing how another player's AI would behave uninhibited)
+	 */
+	public void sittingDuckAI() {
+		System.err.println("Sitting duck");
+		for (int i = 0; i < this.bustersPerPlayer; i++) {
+			Buster curr = allies.get(i);
+			System.out.println(String.format("MOVE %d %d", curr.x, curr.y));
+		}
+	}
+	
+	/**
 	 * Step 1: Check if 
 	 */
 	public void dumbAI() {
