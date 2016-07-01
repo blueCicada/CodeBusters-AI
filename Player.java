@@ -34,8 +34,8 @@ class Player {
     private int turnCount; //does not count enemy turns
     
 	
-	//private List<Ghost> ghosts;
-	private PriorityQueue<Ghost> ghosts;
+	private List<Ghost> ghosts;
+	//private PriorityQueue<Ghost> ghosts;
     private List<Buster> allies;
 	private List<Buster> foes;
 	
@@ -52,7 +52,7 @@ class Player {
 		this.ghostCount = ghostCount;
 		this.bustersPerPlayer = bustersPerPlayer;
 		
-		ghosts = new PriorityQueue<Ghost>(25, new StaminaComparator());//ArrayList<Ghost>();
+		ghosts = new /*PriorityQueue<Ghost>(25, new StaminaComparator());*/ArrayList<Ghost>();
 		allies = new ArrayList<Buster>();
 		foes = new ArrayList<Buster>();
 	}
@@ -105,6 +105,20 @@ class Player {
         	System.err.println(String.format("\nBuster %d reporting for duty", i));
         	Buster curr = allies.get(i); //presumably
         	
+        	PriorityQueue<Ghost> sortedGhosts = new PriorityQueue<Ghost>(25, new DistanceComparator(curr.x, curr.y));
+        	for (Ghost g: ghosts) {
+        		sortedGhosts.add(g);
+        	}
+        	
+        	System.err.println("Check sortedGhost PQ");
+            for (Iterator<Ghost> iterator = sortedGhosts.iterator(); iterator.hasNext();) {
+                Ghost g = iterator.next();
+                System.err.println(
+                		String.format("Ghost %d | Stamina %d | %d engaged | Location (%d, %d)",
+                				g.entityID, g.state, g.value, g.x, g.y));
+            }
+            System.err.println("End sorteGhost PQ");
+        	
         	ArrayList<Buster> stunnableFoes = new ArrayList<Buster>(); 
         	//foes within stunning range which are not already stunned
         	for (Buster f : foes) {
@@ -149,7 +163,8 @@ class Player {
         		
         	} else if (!ghosts.isEmpty()){ //chase or bust ghost
         		//Ghost target = ghosts.get(0); //first in list
-        		Ghost target = ghosts.peek();
+        		//Ghost target = ghosts.peek();
+        		Ghost target = sortedGhosts.peek();
         		double distance = distanceTo(target.x, target.y, curr.x, curr.y);
         		System.err.println(String.format("I am located at (%d, %d)", curr.x, curr.y));
         		System.err.println(String.format("Targeting ghost %d, located at (%d, %d)", 
@@ -391,14 +406,14 @@ class Player {
                 }
             }
             
-            System.err.println("Check ghost PQ");
+            /*System.err.println("Check ghost PQ");
             for (Iterator<Ghost> iterator = p.ghosts.iterator(); iterator.hasNext();) {
                 Ghost g = iterator.next();
                 System.err.println(
                 		String.format("Ghost %d | Stamina %d | %d engaged | Location (%d, %d)",
                 				g.entityID, g.state, g.value, g.x, g.y));
             }
-            System.err.println("End ghost PQ");
+            System.err.println("End ghost PQ");*/
             
             //p.sittingDuckAI();
             p.dumbAI();
@@ -497,14 +512,27 @@ class Coordinates {
 //However, this also means that the busters will tend to work
 //independently, rather than cooperating to capture a ghost faster
 //which may or may not be a good thing
-/*class DistanceComparator implements Comparator<Entity> {
+class DistanceComparator implements Comparator<Entity> {
+	
+	int x, y;
+	
+	public DistanceComparator(int x, int y) {
+		this.x = x;
+		this.y = y;	
+	}
+	
+	public double distanceTo (int toX, int toY, int fromX, int fromY) {
+		return Math.sqrt(Math.pow((double)toX-fromX, 2) + Math.pow((double)toY-fromY, 2));
+	}
+
+	@Override
+	public int compare (Entity entity1, Entity entity2) {
+      if (distanceTo(entity1.x, entity1.y, x, y) < distanceTo(entity2.x, entity2.y, x, y)) return -1;
+      if (distanceTo(entity1.x, entity1.y, x, y) < distanceTo(entity2.x, entity2.y, x, y)) return 1;
+      return 0;
+    }
    
-   @Override
-   public int compare (Entity entity1, Entity entity2) {
-      if 
-   }
-   
-}*/
+}
 class StaminaComparator implements Comparator<Ghost> {
 	   
 	   @Override
