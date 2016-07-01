@@ -105,7 +105,7 @@ class Player {
         	System.err.println(String.format("\nBuster %d reporting for duty", i));
         	Buster curr = allies.get(i); //presumably
         	
-        	PriorityQueue<Ghost> sortedGhosts = new PriorityQueue<Ghost>(25, new DistanceComparator(curr.x, curr.y));
+        	PriorityQueue<Ghost> sortedGhosts = new PriorityQueue<Ghost>(25, new /*Distance*/TimeComparator(curr.x, curr.y));
         	for (Ghost g: ghosts) {
         		sortedGhosts.add(g);
         	}
@@ -113,9 +113,14 @@ class Player {
         	System.err.println("Check sortedGhost PQ");
             for (Iterator<Ghost> iterator = sortedGhosts.iterator(); iterator.hasNext();) {
                 Ghost g = iterator.next();
-                System.err.println(
+                /*System.err.println(
                 		String.format("Ghost %d | Stamina %d | %d engaged | Location (%d, %d) | %f units away from me",
-                				g.entityID, g.state, g.value, g.x, g.y, distanceTo(g.x, g.y, curr.x, curr.y)));
+                				g.entityID, g.state, g.value, g.x, g.y, distanceTo(g.x, g.y, curr.x, curr.y)));*/
+                System.err.println(
+                		String.format("Ghost %d | Stamina %d | %d engaged | Location (%d, %d) | %f units away\n"
+                				+ "Predicted turn cost: %f", g.entityID, g.state, g.value, 
+                				g.x, g.y, distanceTo(g.x, g.y, curr.x, curr.y), 
+                				(g.value == 0) ? 0 : (g.state/g.value) + (distanceTo(g.x, g.y, curr.x, curr.y)/800)));
             }
             System.err.println("End sorteGhost PQ");
         	
@@ -516,32 +521,115 @@ class DistanceComparator implements Comparator<Entity> {
 	
 	int x, y;
 	
+	/**
+	 * Constructor for DistanceComparator
+	 * @param x the abscissa of current buster
+	 * @param y the ordinate of current buster
+	 */
 	public DistanceComparator(int x, int y) {
 		this.x = x;
 		this.y = y;	
 	}
 	
-	public double distanceTo (int toX, int toY, int fromX, int fromY) {
-		return Math.sqrt(Math.pow((double)toX-fromX, 2) + Math.pow((double)toY-fromY, 2));
+	public double distanceTo (int toX, int toY) {
+		return Math.sqrt(Math.pow((double)toX-this.x, 2) + Math.pow((double)toY-this.y, 2));
 	}
 
 	@Override
 	public int compare (Entity entity1, Entity entity2) {
-      if (distanceTo(entity1.x, entity1.y, x, y) < distanceTo(entity2.x, entity2.y, x, y)) return -1;
-      if (distanceTo(entity1.x, entity1.y, x, y) < distanceTo(entity2.x, entity2.y, x, y)) return 1;
-      return 0;
-    }
+		if (distanceTo(entity1.x, entity1.y) < distanceTo(entity2.x, entity2.y)) return -1;
+		if (distanceTo(entity1.x, entity1.y) < distanceTo(entity2.x, entity2.y)) return 1;
+		return 0;
+	}
    
 }
-class StaminaComparator implements Comparator<Ghost> {
-	   
-	   @Override
-	   public int compare (Ghost ghost1, Ghost ghost2) {
-	      if (ghost1.state < ghost2.state) return -1;
-	      if (ghost1.state > ghost2.state) return 1;
-	      return 0;
-	   }
-	   
+class StaminaComparator implements Comparator<Ghost> {  
+	@Override
+	public int compare (Ghost ghost1, Ghost ghost2) {
+		if (ghost1.state < ghost2.state) return -1;
+		if (ghost1.state > ghost2.state) return 1;
+		return 0;
+	}
+}
+class TimeComparator implements Comparator<Ghost> {
+	
+	int x, y;
+	
+	/**
+	 * Constructor for DistanceComparator
+	 * @param x the abscissa of current buster
+	 * @param y the ordinate of current buster
+	 */
+	public TimeComparator(int x, int y) {
+		this.x = x;
+		this.y = y;	
+	}
+	
+	public double timeCost(Ghost ghost) {
+		//return ((ghost.value == 0) ? 0 : (ghost.state/ghost.value)) + (distanceTo(ghost.x, ghost.y)/800);
+		/*
+		 * Let one turn be the unit of time, s.
+		 * Let one unit the unit of distance, m.
+		 * Let one unit of health be hp.
+		 * 
+		 * Let P be the predicted total time cost to reach and capture ghost. (see note below)
+		 * Let R be the distance to the current location of the ghost.
+		 * Let D be the distance to the closest point within a 1760m radius of the current location of the ghost. (see comment below)
+		 * Let T be the time cost to reach said point.
+		 * Let B be the number of busters currently engaging the ghost.
+		 * Let H be the current stamina of the ghost
+		 * And let H' be the predicted stamina remaining upon arrival (see warning below)
+		 * 
+		 * P = T (s) + (H' (hp))/(B+1 (hp/s))
+		 * 		= (T + H'/(B+1)) (s)
+		 * 		In English:
+		 * 		The predicted time cost is equal to the number of turns it takes to reach the closest point within
+		 * 		a 1760m radius of the ghost PLUS the number of turns required to bring the stamina that remains upon
+		 * 		arrival to zero.
+		 * 
+		 * D = (R > 1760) ? (R - 1760) : R
+		 * 		In English:
+		 * 		The distance to the closest point within a 1760m radius of the ghost's current location is either
+		 * 		the distance to the current location of the ghost MINUS 1760 (if we are currently outside the radius)
+		 * 		OR it is zero (if we are already inside the radius)
+		 * 
+		 * T = (D (m)/800 (m/s))
+		 * 		= (D/800) (s)
+		 * 		In English:
+		 * 		Time taken to reach the closest point within a 1760m radius of the ghost is the distance to reach
+		 * 		that point, divided by 800m/s (800m is the maximum distance a buster can travel in a single turn)
+		 * 
+		 * H' = H (hp) - T (s) * B (hp/s)
+		 * 		= (H - T*B) (hp)
+		 * 		In English:
+		 * 		The amount of stamina the ghost is predicted to have left by the time you arrive is equal to its
+		 * 		current stamina MINUS the product to the number of turns required to get there, and the number of
+		 * 		busters currently engaging the ghost. 
+		 * 
+		 * NOTE: This time cost does not take into account the amount of time required to return to base
+		 * WARNING: This does not account for deadlocks, in which case s' should be ZERO, and it would
+		 * 		probably be beneficial to go for the ghost
+		 * COMMENT: May want to consider applying ceil to the distance, since a half move is still a move
+		 * 		May also want to modify logic to account for the case where the buster is within 900m of the ghost
+		 * 		Though this may not be necessary, since I'm already ignoring where the ghost may move to
+		 */
+		double distanceToGhost = distanceTo(ghost.x, ghost.y);
+		double distanceToBustingRange = (distanceToGhost >= 1760) ? distanceToGhost - 1760 : 0;
+		double travelCost = distanceToBustingRange/800;
+		double remainingStamina = ghost.state - (travelCost*ghost.value)
+		double predictedTimeCost;
+	}
+	
+	public double distanceTo (int toX, int toY) {
+		return Math.sqrt(Math.pow((double)toX-this.x, 2) + Math.pow((double)toY-this.y, 2));
+	}
+	
+	@Override
+	public int compare (Ghost ghost1, Ghost ghost2) {
+		if (timeCost(ghost1) < timeCost(ghost2)) return -1;
+		if (timeCost(ghost1) > timeCost(ghost2)) return 1;
+		return 0;
+	}
 }
 
 //Original
