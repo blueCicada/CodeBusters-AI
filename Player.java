@@ -390,6 +390,16 @@ class Player {
                 	p.foes.add(new Buster(entityID, x, y, state, value, entityType));
                 }
             }
+            
+            System.err.println("Check ghost PQ");
+            for (Iterator<Ghost> iterator = p.ghosts.iterator(); iterator.hasNext();) {
+                Ghost g = iterator.next();
+                System.err.println(
+                		String.format("Ghost %d | Stamina %d | %d engaged | Location (%d, %d)",
+                				g.entityID, g.state, g.value, g.x, g.y));
+            }
+            System.err.println("End ghost PQ");
+            
             //p.sittingDuckAI();
             p.dumbAI();
             //p.romkaClone1();
