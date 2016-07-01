@@ -114,8 +114,8 @@ class Player {
             for (Iterator<Ghost> iterator = sortedGhosts.iterator(); iterator.hasNext();) {
                 Ghost g = iterator.next();
                 System.err.println(
-                		String.format("Ghost %d | Stamina %d | %d engaged | Location (%d, %d)",
-                				g.entityID, g.state, g.value, g.x, g.y));
+                		String.format("Ghost %d | Stamina %d | %d engaged | Location (%d, %d) | %f units away from me",
+                				g.entityID, g.state, g.value, g.x, g.y, distanceTo(g.x, g.y, curr.x, curr.y)));
             }
             System.err.println("End sorteGhost PQ");
         	
