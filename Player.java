@@ -152,8 +152,8 @@ class Player {
         		int centreY = 1556+4*800;
         		
 
-        		if (i % 2 == 1) cleaverAlpha(curr);//spiralAlpha(curr);
-    			else cleaverBeta(curr);//spiralBeta(curr);
+        		if (i % 2 == 1) rectAlpha(curr);/*cleaverAlpha(curr);*///spiralAlpha(curr);
+    			else rectBeta(curr);/*cleaverBeta(curr);*///spiralBeta(curr);
         		
         		
         	} else if (curr.state == 1) { //if carrying a ghost, return it to base
@@ -320,6 +320,8 @@ class Player {
 		System.err.println("Patrolling cleaverAlpha");
 		ArrayList<Coordinates> alphaCleaver = new ArrayList<Coordinates>();
 		alphaCleaver.add(new Coordinates(1556+9*800+2200, 1556+4*800)); //centre
+		alphaCleaver.add(new Coordinates(1556+16*800, 1556+4*800)); //point
+		alphaCleaver.add(new Coordinates(1556+17*800, 1556+5*800)); //point
 		alphaCleaver.add(new Coordinates(1556+17*800, 1556+4*800));
 		alphaCleaver.add(new Coordinates(1556+17*800, 1556));
 		alphaCleaver.add(new Coordinates(1556, 1556));
@@ -363,6 +365,8 @@ class Player {
 		System.err.println("Patrolling cleaverBeta");
 		ArrayList<Coordinates> betaCleaver = new ArrayList<Coordinates>();
 		betaCleaver.add(new Coordinates(1556+9*800-2200, 1556+4*800)); //centre
+		betaCleaver.add(new Coordinates(1556+800, 1556+4*800)); //point
+		betaCleaver.add(new Coordinates(1556, 1556+5*800)); //point
 		betaCleaver.add(new Coordinates(1556, 1556+4*800));
 		betaCleaver.add(new Coordinates(1556, 1556+8*800));
 		betaCleaver.add(new Coordinates(1556+17*800, 1556+8*800));
