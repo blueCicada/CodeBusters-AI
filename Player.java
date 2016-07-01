@@ -113,14 +113,14 @@ class Player {
         	System.err.println("Check sortedGhost PQ");
             for (Iterator<Ghost> iterator = sortedGhosts.iterator(); iterator.hasNext();) {
                 Ghost g = iterator.next();
-                /*System.err.println(
-                		String.format("Ghost %d | Stamina %d | %d engaged | Location (%d, %d) | %f units away from me",
-                				g.entityID, g.state, g.value, g.x, g.y, distanceTo(g.x, g.y, curr.x, curr.y)));*/
                 System.err.println(
+                		String.format("Ghost %d | Stamina %d | %d engaged | Location (%d, %d) | %f units away from me",
+                				g.entityID, g.state, g.value, g.x, g.y, distanceTo(g.x, g.y, curr.x, curr.y)));
+                /*System.err.println(
                 		String.format("Ghost %d | Stamina %d | %d engaged | Location (%d, %d) | %f units away\n"
                 				+ "Predicted turn cost: %f", g.entityID, g.state, g.value, 
                 				g.x, g.y, distanceTo(g.x, g.y, curr.x, curr.y), 
-                				(g.value == 0) ? 0 : (g.state/g.value) + (distanceTo(g.x, g.y, curr.x, curr.y)/800)));
+                				(g.value == 0) ? 0 : (g.state/g.value) + (distanceTo(g.x, g.y, curr.x, curr.y)/800)));*/
             }
             System.err.println("End sorteGhost PQ");
         	
@@ -616,8 +616,9 @@ class TimeComparator implements Comparator<Ghost> {
 		double distanceToGhost = distanceTo(ghost.x, ghost.y);
 		double distanceToBustingRange = (distanceToGhost >= 1760) ? distanceToGhost - 1760 : 0;
 		double travelCost = distanceToBustingRange/800;
-		double remainingStamina = ghost.state - (travelCost*ghost.value)
-		double predictedTimeCost;
+		double remainingStamina = ghost.state - (travelCost*ghost.value); //may need ternary operator to handle negative cases
+		double predictedTimeCost = travelCost + (remainingStamina/(ghost.value + 1));
+		return predictedTimeCost;
 	}
 	
 	public double distanceTo (int toX, int toY) {
