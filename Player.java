@@ -132,7 +132,7 @@ class Player {
     			}
     		}
         	
-        	if (curr.stunCooldown == 0 && curr.state != 1 && !stunnableFoes.isEmpty()) {
+        	if (curr.stunCooldown == 0 && /*curr.state != 1 && */!stunnableFoes.isEmpty()) {
         		//if we are ready to stun, and we are not carrying a ghost, and there are enemies within stunning range
         		curr.stunCooldown += 20;
         		System.err.println(String.format("Stunning Buster %d", stunnableFoes.get(0).entityID));
@@ -152,8 +152,8 @@ class Player {
         		int centreY = 1556+4*800;
         		
 
-        		if (i % 2 == 1) spiralAlpha(curr);
-    			else spiralBeta(curr);
+        		if (i % 2 == 1) cleaverAlpha(curr);//spiralAlpha(curr);
+    			else cleaverBeta(curr);//spiralBeta(curr);
         		
         		
         	} else if (curr.state == 1) { //if carrying a ghost, return it to base
@@ -194,7 +194,7 @@ class Player {
 	}
 	
 	public void spiralAlpha (Buster curr) {
-		System.err.println("Patrolling");
+		System.err.println("Patrolling spiralAlpha");
 		ArrayList<Coordinates> alphaSpiral = new ArrayList<Coordinates>();
 		alphaSpiral.add(new Coordinates(1556+9*800+2200, 1556+4*800)); //centre
 		alphaSpiral.add(new Coordinates(1556+17*800, 1556+4*800));
@@ -239,7 +239,7 @@ class Player {
 	}
 	
 	public void spiralBeta (Buster curr) {
-		System.err.println("Patrolling");
+		System.err.println("Patrolling spiralBeta");
 		ArrayList<Coordinates> betaSpiral = new ArrayList<Coordinates>();
 		betaSpiral.add(new Coordinates(1556+9*800-2200, 1556+4*800)); //centre
 		betaSpiral.add(new Coordinates(1556, 1556+4*800));
@@ -315,6 +315,92 @@ class Player {
 		}
 		System.out.println(String.format("MOVE %d %d", curr.destX, curr.destY));
 	}*/
+	
+	public void cleaverAlpha (Buster curr) {
+		System.err.println("Patrolling cleaverAlpha");
+		ArrayList<Coordinates> alphaCleaver = new ArrayList<Coordinates>();
+		alphaCleaver.add(new Coordinates(1556+9*800+2200, 1556+4*800)); //centre
+		alphaCleaver.add(new Coordinates(1556+17*800, 1556+4*800));
+		alphaCleaver.add(new Coordinates(1556+17*800, 1556));
+		alphaCleaver.add(new Coordinates(1556, 1556));
+		alphaCleaver.add(new Coordinates(1556, 1556+2*800));
+		alphaCleaver.add(new Coordinates(1556+9*800, 1556+2*800));
+		
+		int lastIndex = alphaCleaver.size() - 1; //should be 5 here since we start counting from 0
+		
+		boolean initiatingPatrol = true;
+		
+		for (Coordinates pt: alphaCleaver) {
+			if (pt.x == curr.destX && pt.y == curr.destY) {
+				initiatingPatrol = false;
+				break;
+			}
+		}
+		
+		if (initiatingPatrol == true) {
+			curr.destX = alphaCleaver.get(0).x;
+			curr.destY = alphaCleaver.get(0).y;
+		} else {
+			for (Coordinates pt: alphaCleaver) {
+				int index = alphaCleaver.indexOf(pt);
+				if (pt.x == curr.x && pt.y == curr.y) { //then we've reached our location
+					if (index == lastIndex) {
+						curr.destX = 1556+9*800;
+						curr.destY = 1556+4*800;
+					} else {
+						Coordinates next = alphaCleaver.get(alphaCleaver.indexOf(pt) + 1);
+						curr.destX = next.x;
+						curr.destY = next.y;
+					}
+				} 
+			}
+		}
+		System.err.println(String.format("Bound for %d,%d", curr.destX, curr.destY));
+		System.out.println(String.format("MOVE %d %d", curr.destX, curr.destY));
+	}
+	
+	public void cleaverBeta (Buster curr) {
+		System.err.println("Patrolling cleaverBeta");
+		ArrayList<Coordinates> betaCleaver = new ArrayList<Coordinates>();
+		betaCleaver.add(new Coordinates(1556+9*800-2200, 1556+4*800)); //centre
+		betaCleaver.add(new Coordinates(1556, 1556+4*800));
+		betaCleaver.add(new Coordinates(1556, 1556+8*800));
+		betaCleaver.add(new Coordinates(1556+17*800, 1556+8*800));
+		betaCleaver.add(new Coordinates(1556+17*800, 1556+6*800));
+		betaCleaver.add(new Coordinates(1556+9*800, 1556+6*800));
+		
+		int lastIndex = betaCleaver.size() - 1;//should be 5
+		
+		boolean initiatingPatrol = true;
+		
+		for (Coordinates pt: betaCleaver) {
+			if (pt.x == curr.destX && pt.y == curr.destY) {
+				initiatingPatrol = false;
+				break;
+			}
+		}
+		
+		if (initiatingPatrol == true) {
+			curr.destX = betaCleaver.get(0).x;
+			curr.destY = betaCleaver.get(0).y;
+		} else {
+			for (Coordinates pt: betaCleaver) {
+				int index = betaCleaver.indexOf(pt);
+				if (pt.x == curr.x && pt.y == curr.y) { //then we've reached our location
+					if (index == lastIndex) {
+						curr.destX = 1556+9*800;
+						curr.destY = 1556+4*800;
+					} else {
+						Coordinates next = betaCleaver.get(betaCleaver.indexOf(pt) + 1);
+						curr.destX = next.x;
+						curr.destY = next.y;
+					}
+				} 
+			}
+		}
+		System.err.println(String.format("Bound for %d,%d", curr.destX, curr.destY));
+		System.out.println(String.format("MOVE %d %d", curr.destX, curr.destY));
+	}
 	
 	public double distanceTo (int toX, int toY, int fromX, int fromY) {
 		return Math.sqrt(Math.pow((double)toX-fromX, 2) + Math.pow((double)toY-fromY, 2));
