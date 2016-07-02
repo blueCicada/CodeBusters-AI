@@ -182,15 +182,14 @@ class Player {
     			}
     		}
         	
-        	int rushX = 0, rushY = 0;
         	if (this.turnCount == 1) {
 				double angle = Math.toRadians(90/(this.allies.size()));
-				rushX = (int) Math.round(curr.x + ((this.myTeamID == 0) ? 1 : -1)*(8000*Math.cos((i*angle)+(angle/2))));
-				rushY = (int) Math.round(curr.y + ((this.myTeamID == 0) ? 1 : -1)*(8000*Math.sin((i*angle)+(angle/2))));
+				curr.destX = (int) Math.round(curr.x + ((this.myTeamID == 0) ? 1 : -1)*(8000*Math.cos((i*angle)+(angle/2))));
+				curr.destY = (int) Math.round(curr.y + ((this.myTeamID == 0) ? 1 : -1)*(8000*Math.sin((i*angle)+(angle/2))));
 				System.err.println(/*Math.round(/*curr.x + /*((this.myTeamID == 0) ? 1 : -1)**/(/*8000**/Math.cos(1*90)))/*)*/;
 				System.err.println(/*Math.round(/*curr.y + /*((this.myTeamID == 0) ? 1 : -1)**/(/*8000**/Math.sin(1*angle)))/*)*/;
 				System.err.println(String.format("Ang %f, curr loc (%d,%d),"
-				+"destX %d, destY %d, %d", angle, curr.x, curr.y, rushX, rushY, i));
+				+"destX %d, destY %d, %d", angle, curr.x, curr.y, curr.destX, curr.destY, i));
 			}
 			
         	/*BEGIN ACTION CONTROL BLOCK***/
@@ -204,7 +203,7 @@ class Player {
         		System.out.println(String.format("STUN %d", stunnableFoes.get(0).entityID));
         		//assuming that the stun worked, the following line should be okay:
         		stunnableFoes.get(0).state = 2; //we set the state manually so other allies don't get confused
-        	} else if ((curr.x != rushX || curr.y != rushY) && enableRush) { //rush to target
+        	} else if ((curr.x != curr.destX || curr.y != curr.destY) && enableRush) { //rush to target
 				System.out.println(String.format("MOVE %d %d %d", curr.destX, curr.destY, curr.entityID));
 			} else if (curr.state == 3) {//if currently busting a ghost and the above does not apply - 
         		//then continue busting it
@@ -246,11 +245,14 @@ class Player {
 	        		if (900 <= distance && distance <= 1760) {
 	        			System.err.println(String.format("Attempting to capture ghost %d", target.entityID));
 	        			System.out.println(String.format("BUST %d", target.entityID));//capture
+	        			break;
 	        		} else if (distance >= 900) { //advance towards present location of target ghost if not too close
 	        			System.out.println(String.format("MOVE %d %d", target.x, target.y));
+	        			break;
 	        		} else if (sortedGhosts.isEmpty()) {
 	        			System.err.println("hurr durr");
 	        			System.out.println(String.format("MOVE %d %d", ((~myTeamID)&00000001)*16001, ((~myTeamID)&00000001)*8001));
+	        			break;
 	        		}
         		}
         		/*else {
