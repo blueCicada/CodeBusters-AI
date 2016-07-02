@@ -100,9 +100,13 @@ class Player {
     		}
 		
 			if (this.turnCount == 1) {
-				double angle = 90/(this.allies.size() - 1);
+				double angle = Math.toRadians(90/(this.allies.size() - 1));
 				curr.destX = (int) Math.round(curr.x + ((this.myTeamID == 0) ? 1 : -1)*(8000*Math.cos(i*angle)));
 				curr.destY = (int) Math.round(curr.y + ((this.myTeamID == 0) ? 1 : -1)*(8000*Math.sin(i*angle)));
+				System.err.println(/*Math.round(/*curr.x + /*((this.myTeamID == 0) ? 1 : -1)**/(/*8000**/Math.cos(1*90)))/*)*/;
+				System.err.println(/*Math.round(/*curr.y + /*((this.myTeamID == 0) ? 1 : -1)**/(/*8000**/Math.sin(1*angle)))/*)*/;
+				System.err.println(String.format("Ang %f, curr loc (%d,%d),"
+				+"destX %d, destY %d, %d", angle, curr.x, curr.y, curr.destX, curr.destY, i));
 			}
 			
 			if (curr.stunCooldown == 0 && !stunnableFoes.isEmpty()) {
@@ -117,7 +121,7 @@ class Player {
         			System.out.println(String.format("MOVE %d %d", 16001*this.myTeamID, 9001*this.myTeamID));
         		}*/
 			} else if (curr.x != curr.destX || curr.y != curr.destY) {
-				System.out.println(String.format("MOVE %d %d", curr.destX, curr.destX));
+				System.out.println(String.format("MOVE %d %d", curr.destX, curr.destY));
 			} else {
 				this.dumbAI();
 			}
@@ -550,7 +554,7 @@ class Player {
             
             //p.sittingDuckAI();
             
-            if (p.turnCount < 21)p.romkaClone1();
+            if (p.turnCount < 11)p.romkaClone1();
             else p.dumbAI();
         }
 	}
