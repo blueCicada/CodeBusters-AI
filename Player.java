@@ -121,7 +121,7 @@ class Player {
         			System.out.println(String.format("MOVE %d %d", 16001*this.myTeamID, 9001*this.myTeamID));
         		}*/
 			} else if (curr.x != curr.destX || curr.y != curr.destY) {
-				System.out.println(String.format("MOVE %d %d", curr.destX, curr.destY));
+				System.out.println(String.format("MOVE %d %d %d", curr.destX, curr.destY, curr.entityID));
 			} else {
 				this.dumbAI();
 			}
@@ -152,12 +152,12 @@ class Player {
         		sortedGhosts.add(g);
         	}
         	
-        	System.err.println("Check sortedGhost PQ");
+        	System.err.println("Check sortedGhost PQ"); //not guaranteed to print in order
             for (Iterator<Ghost> iterator = sortedGhosts.iterator(); iterator.hasNext();) {
                 Ghost g = iterator.next();
                 System.err.println(
-                		String.format("Ghost %d | Stamina %d | %d engaged | Location (%d, %d) | %f units away from me",
-                				g.entityID, g.state, g.value, g.x, g.y, distanceTo(g.x, g.y, curr.x, curr.y)));
+                		String.format("Ghost %d | Stamina %d | %d engaged | Location (%d, %d) | %f units from me | Cost:%f",
+                				g.entityID, g.state, g.value, g.x, g.y, distanceTo(g.x, g.y, curr.x, curr.y), this.timeCost(g, curr)));
                 /*System.err.println(
                 		String.format("Ghost %d | Stamina %d | %d engaged | Location (%d, %d) | %f units away\n"
                 				+ "Predicted turn cost: %f", g.entityID, g.state, g.value, 
@@ -174,7 +174,11 @@ class Player {
     			}
     		}
         	
-        	if (curr.stunCooldown == 0 && /*curr.state != 1 && */!stunnableFoes.isEmpty()) {
+        	//save this for the next commit
+        	/*if (curr.state == 2) {
+        		System.err.println("O fuck I am stunned");
+        		System.out.println("RELEASE");
+        	} else */if (curr.stunCooldown == 0 && /*curr.state != 1 && */!stunnableFoes.isEmpty()) {
         		//if we are ready to stun, and we are not carrying a ghost, and there are enemies within stunning range
         		curr.stunCooldown += 20;
         		System.err.println(String.format("Stunning Buster %d", stunnableFoes.get(0).entityID));
@@ -450,6 +454,62 @@ class Player {
 	
 	public double distanceTo (int toX, int toY, int fromX, int fromY) {
 		return Math.sqrt(Math.pow((double)toX-fromX, 2) + Math.pow((double)toY-fromY, 2));
+	}
+	
+	public double timeCost(Ghost ghost, Buster curr) {
+		//return ((ghost.value == 0) ? 0 : (ghost.state/ghost.value)) + (distanceTo(ghost.x, ghost.y)/800);
+		/*
+		 * Let one turn be the unit of time, s.
+		 * Let one unit the unit of distance, m.
+		 * Let one unit of health be hp.
+		 * 
+		 * Let P be the predicted total time cost to reach and capture ghost. (see note below)
+		 * Let R be the distance to the current location of the ghost.
+		 * Let D be the distance to the closest point within a 1760m radius of the current location of the ghost. (see comment below)
+		 * Let T be the time cost to reach said point.
+		 * Let B be the number of busters currently engaging the ghost.
+		 * Let H be the current stamina of the ghost
+		 * And let H' be the predicted stamina remaining upon arrival (see warning below)
+		 * 
+		 * P = T (s) + (H' (hp))/(B+1 (hp/s))
+		 * 		= (T + H'/(B+1)) (s)
+		 * 		In English:
+		 * 		The predicted time cost is equal to the number of turns it takes to reach the closest point within
+		 * 		a 1760m radius of the ghost PLUS the number of turns required to bring the stamina that remains upon
+		 * 		arrival to zero.
+		 * 
+		 * D = (R > 1760) ? (R - 1760) : R
+		 * 		In English:
+		 * 		The distance to the closest point within a 1760m radius of the ghost's current location is either
+		 * 		the distance to the current location of the ghost MINUS 1760 (if we are currently outside the radius)
+		 * 		OR it is zero (if we are already inside the radius)
+		 * 
+		 * T = (D (m)/800 (m/s))
+		 * 		= (D/800) (s)
+		 * 		In English:
+		 * 		Time taken to reach the closest point within a 1760m radius of the ghost is the distance to reach
+		 * 		that point, divided by 800m/s (800m is the maximum distance a buster can travel in a single turn)
+		 * 
+		 * H' = H (hp) - T (s) * B (hp/s)
+		 * 		= (H - T*B) (hp)
+		 * 		In English:
+		 * 		The amount of stamina the ghost is predicted to have left by the time you arrive is equal to its
+		 * 		current stamina MINUS the product to the number of turns required to get there, and the number of
+		 * 		busters currently engaging the ghost. 
+		 * 
+		 * NOTE: This time cost does not take into account the amount of time required to return to base
+		 * WARNING: This does not account for deadlocks, in which case s' should be ZERO, and it would
+		 * 		probably be beneficial to go for the ghost
+		 * COMMENT: May want to consider applying ceil to the distance, since a half move is still a move
+		 * 		May also want to modify logic to account for the case where the buster is within 900m of the ghost
+		 * 		Though this may not be necessary, since I'm already ignoring where the ghost may move to
+		 */
+		double distanceToGhost = distanceTo(ghost.x, ghost.y,curr.x,curr.y);
+		double distanceToBustingRange = (distanceToGhost >= 1760) ? distanceToGhost - 1760 : 0;
+		double travelCost = distanceToBustingRange/800;
+		double remainingStamina = ghost.state - (travelCost*ghost.value); //may need ternary operator to handle negative cases
+		double predictedTimeCost = travelCost + (remainingStamina/(ghost.value + 1));
+		return predictedTimeCost;
 	}
 	
 	public static void main(String[] args) {
