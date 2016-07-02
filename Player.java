@@ -100,9 +100,9 @@ class Player {
     		}
 		
 			if (this.turnCount == 1) {
-				double angle = Math.toRadians(90/(this.allies.size() - 1));
-				curr.destX = (int) Math.round(curr.x + ((this.myTeamID == 0) ? 1 : -1)*(8000*Math.cos(i*angle)));
-				curr.destY = (int) Math.round(curr.y + ((this.myTeamID == 0) ? 1 : -1)*(8000*Math.sin(i*angle)));
+				double angle = Math.toRadians(90/(this.allies.size()));
+				curr.destX = (int) Math.round(curr.x + ((this.myTeamID == 0) ? 1 : -1)*(8000*Math.cos((i*angle)+(angle/2))));
+				curr.destY = (int) Math.round(curr.y + ((this.myTeamID == 0) ? 1 : -1)*(8000*Math.sin((i*angle)+(angle/2))));
 				System.err.println(/*Math.round(/*curr.x + /*((this.myTeamID == 0) ? 1 : -1)**/(/*8000**/Math.cos(1*90)))/*)*/;
 				System.err.println(/*Math.round(/*curr.y + /*((this.myTeamID == 0) ? 1 : -1)**/(/*8000**/Math.sin(1*angle)))/*)*/;
 				System.err.println(String.format("Ang %f, curr loc (%d,%d),"
@@ -170,15 +170,15 @@ class Player {
         	//foes within stunning range which are not already stunned
         	for (Buster f : foes) {
     			if (distanceTo(curr.x, curr.y, f.x, f.y) <= 1760 && f.state != 2) {
-    				stunnableFoes.add(f);
+    				if (f.state == 3) stunnableFoes.add(0, f);
+    				else stunnableFoes.add(f);
     			}
     		}
         	
-        	//save this for the next commit
-        	/*if (curr.state == 2) {
+        	if (curr.state == 2) {
         		System.err.println("O fuck I am stunned");
         		System.out.println("RELEASE");
-        	} else */if (curr.stunCooldown == 0 && /*curr.state != 1 && */!stunnableFoes.isEmpty()) {
+        	} else if (curr.stunCooldown == 0 && /*curr.state != 1 && */!stunnableFoes.isEmpty()) {
         		//if we are ready to stun, and we are not carrying a ghost, and there are enemies within stunning range
         		curr.stunCooldown += 20;
         		System.err.println(String.format("Stunning Buster %d", stunnableFoes.get(0).entityID));
@@ -809,7 +809,13 @@ class TimeComparator implements Comparator<Ghost> {
 		double distanceToGhost = distanceTo(ghost.x, ghost.y);
 		double distanceToBustingRange = (distanceToGhost >= 1760) ? distanceToGhost - 1760 : 0;
 		double travelCost = distanceToBustingRange/800;
-		double remainingStamina = ghost.state - (travelCost*ghost.value); //may need ternary operator to handle negative cases
+		double remainingStamina = ghost.state - (travelCost*ghost.value);
+		//may need ternary operator to handle negative cases
+		/*^actually, you might not need to, it may even be beneficial in some cases,
+		 * eg. this makes it more urgent to get to a deadlocked ghost, as remaining stamina
+		 * clocks over into the negative
+		 * But on the contrary, this may falsely prioritise ghosts which will be gone before the buster can reach it
+		 */
 		double predictedTimeCost = travelCost + (remainingStamina/(ghost.value + 1));
 		return predictedTimeCost;
 	}
