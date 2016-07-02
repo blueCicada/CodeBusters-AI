@@ -81,8 +81,46 @@ class Player {
 	public void romkaClone1() {
 		System.err.println("Romka Clone 1");
 		
-		for (int i = 0; i < this.bustersPerPlayer; i++) { Buster curr = allies.get(i);
+		for (int i = 0; i < this.bustersPerPlayer; i++) {
+			System.err.println(String.format("\nBuster %d reporting for duty", i));
+			Buster curr = allies.get(i);
+			
+			ArrayList<Buster> stunnableFoes = new ArrayList<Buster>(); 
+        	//foes within stunning range which are not already stunned
+			ArrayList<Buster> dangerFoes = new ArrayList<Buster>(); 
+        	//foes outside stunning range which are not already stunned but within sighting range
+        	//inside the 'danger zone'
+        	//will be more effective when we later implement a way to approximately keep track of enemy stuncounts
+        	for (Buster f : foes) {
+    			if (distanceTo(curr.x, curr.y, f.x, f.y) <= 1760 && f.state != 2) {
+    				stunnableFoes.add(f);
+    			} else if (distanceTo(curr.x, curr.y, f.x, f.y) > 1760 && f.state != 2) {
+    				dangerFoes.add(f);
+    			}
+    		}
 		
+			if (this.turnCount == 1) {
+				double angle = 90/(this.allies.size() - 1);
+				curr.destX = curr.x + ((this.myTeamID == 0) ? 1 : -1)*(8000*Math.cos(i*angle));
+				curr.destY = curr.y + ((this.myTeamID == 0) ? 1 : -1)*(8000*Math.sin(i*angle));
+			}
+			
+			if (curr.stunCooldown == 0 && !stunnableFoes.isEmpty()) {
+				curr.stunCooldown += 20;
+        		System.err.println(String.format("Stunning Buster %d", stunnableFoes.get(0).entityID));
+        		System.out.println(String.format("STUN %d", stunnableFoes.get(0).entityID));
+			/*} else if (curr.state == 1) { //if carrying, return to base
+				System.err.println("Carrying ghost lol");
+        		if (distanceTo(16001*this.myTeamID,9001*this.myTeamID,curr.x,curr.y) <= 1600) {
+        			System.out.println("RELEASE");
+        		} else { //Move towards base
+        			System.out.println(String.format("MOVE %d %d", 16001*this.myTeamID, 9001*this.myTeamID));
+        		}*/
+			} else if (curr.x != curr.destX && curr.y != curr.destY) {
+				System.out.println(String.format("MOVE %d %d", curr.destX, curr.destX));
+			} else {
+				this.dumbAI();
+			}
 		}
 	}
 	
@@ -152,8 +190,8 @@ class Player {
         		int centreY = 1556+4*800;
         		
 
-        		if (i % 2 == 1) rectAlpha(curr);/*cleaverAlpha(curr);*///spiralAlpha(curr);
-    			else rectBeta(curr);/*cleaverBeta(curr);*///spiralBeta(curr);
+        		if (i % 2 == 1) /*rectAlpha(curr);*//*cleaverAlpha(curr);*/spiralAlpha(curr);
+    			else /*rectBeta(curr);*//*cleaverBeta(curr);*/spiralBeta(curr);
         		
         		
         	} else if (curr.state == 1) { //if carrying a ghost, return it to base
@@ -422,7 +460,7 @@ class Player {
         // game loop
         while (true) {
             int entities = in.nextInt(); // the number of busters and ghosts visible to you
-            p.turnCount++;
+            p.turnCount++; //turns shall start from 1, and we do not count enemy turns
             p.ghosts.clear();
             /*for (Buster f: p.foes ){
             	f.radarCount++;
@@ -511,8 +549,9 @@ class Player {
             System.err.println("End ghost PQ");*/
             
             //p.sittingDuckAI();
-            p.dumbAI();
-            //p.romkaClone1();
+            
+            if (p.turnCount < 21)p.romkaClone1();
+            else p.dumbAI();
         }
 	}
 
@@ -538,8 +577,8 @@ class Buster extends Entity {
 	int team;//entityType;
 	int state; // For busters: 0=idle, 1=carrying a ghost, 2=stunned, 3=in the process of trapping a ghost
 	int value; // For busters: Ghost id being carried. According to DeafGecko, this is -1 if not stunned or carrying
-	int destX;
-	int destY;
+	double destX;
+	double destY;
 	//int radarCount;
 	
 	public Buster (int entityID, int x, int y, int state, int value, int entityType) {
