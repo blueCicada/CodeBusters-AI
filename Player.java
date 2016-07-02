@@ -123,6 +123,7 @@ class Player {
 			} else if (curr.x != curr.destX || curr.y != curr.destY) {
 				System.out.println(String.format("MOVE %d %d %d", curr.destX, curr.destY, curr.entityID));
 			} else {
+				System.err.println("Transferring control to dumbAI");
 				this.dumbAI();
 			}
 		}
@@ -215,21 +216,27 @@ class Player {
         	} else if (!ghosts.isEmpty()){ //chase or bust ghost
         		//Ghost target = ghosts.get(0); //first in list
         		//Ghost target = ghosts.peek();
-        		Ghost target = sortedGhosts.peek();
-        		double distance = distanceTo(target.x, target.y, curr.x, curr.y);
-        		System.err.println(String.format("I am located at (%d, %d)", curr.x, curr.y));
-        		System.err.println(String.format("Targeting ghost %d, located at (%d, %d)", 
-        				target.entityID, target.x, target.y));
-        		System.err.println(String.format("According to my calculations, distance is %f", distance));
-        		if (900 <= distance && distance <= 1760) {
-        			System.err.println(String.format("Attempting to capture ghost %d", target.entityID));
-        			System.out.println(String.format("BUST %d", target.entityID));//capture
-        		} else if (distance >= 900) { //advance towards present location of target ghost if not too close
-        			System.out.println(String.format("MOVE %d %d", target.x, target.y));
-        		} else {
+        		while (!sortedGhosts.isEmpty()) {
+	        		Ghost target = sortedGhosts.poll();
+	        		double distance = distanceTo(target.x, target.y, curr.x, curr.y);
+	        		System.err.println(String.format("I am located at (%d, %d)", curr.x, curr.y));
+	        		System.err.println(String.format("Targeting ghost %d, located at (%d, %d)", 
+	        				target.entityID, target.x, target.y));
+	        		System.err.println(String.format("According to my calculations, distance is %f", distance));
+	        		if (900 <= distance && distance <= 1760) {
+	        			System.err.println(String.format("Attempting to capture ghost %d", target.entityID));
+	        			System.out.println(String.format("BUST %d", target.entityID));//capture
+	        		} else if (distance >= 900) { //advance towards present location of target ghost if not too close
+	        			System.out.println(String.format("MOVE %d %d", target.x, target.y));
+	        		} else if (sortedGhosts.isEmpty()) {
+	        			System.err.println("hurr durr");
+	        			System.out.println(String.format("MOVE %d %d", ((~myTeamID)&00000001)*16001, ((~myTeamID)&00000001)*8001));
+	        		}
+        		}
+        		/*else {
         			System.err.println("hurr durr");
         			System.out.println("MOVE 8000 4500");
-        		}
+        		}*/
         	} else {
         	    System.err.println("Defaulting, fuck it");
         		//System.out.println("MOVE 8000 4500");
