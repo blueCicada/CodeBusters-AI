@@ -142,6 +142,12 @@ class Player {
 		System.err.println("initiate AI");
 		System.err.println(this.bustersPerPlayer);
 		
+		boolean enableRush = false;
+		
+		if (this.turnCount < 11) {
+			enableRush = true;
+			System.err.println("RUSHING ENABLED");
+		}
 		
         for (int i = 0; i < this.bustersPerPlayer; i++) {
         	
@@ -171,15 +177,28 @@ class Player {
         	//foes within stunning range which are not already stunned
         	for (Buster f : foes) {
     			if (distanceTo(curr.x, curr.y, f.x, f.y) <= 1760 && f.state != 2) {
-    				if (f.state == 3) stunnableFoes.add(0, f);
+    				if (f.state == 3) stunnableFoes.add(0, f); //prioritise carrying busters
     				else stunnableFoes.add(f);
     			}
     		}
         	
+        	if (this.turnCount == 1) {
+				double angle = Math.toRadians(90/(this.allies.size()));
+				curr.destX = (int) Math.round(curr.x + ((this.myTeamID == 0) ? 1 : -1)*(8000*Math.cos((i*angle)+(angle/2))));
+				curr.destY = (int) Math.round(curr.y + ((this.myTeamID == 0) ? 1 : -1)*(8000*Math.sin((i*angle)+(angle/2))));
+				System.err.println(/*Math.round(/*curr.x + /*((this.myTeamID == 0) ? 1 : -1)**/(/*8000**/Math.cos(1*90)))/*)*/;
+				System.err.println(/*Math.round(/*curr.y + /*((this.myTeamID == 0) ? 1 : -1)**/(/*8000**/Math.sin(1*angle)))/*)*/;
+				System.err.println(String.format("Ang %f, curr loc (%d,%d),"
+				+"destX %d, destY %d, %d", angle, curr.x, curr.y, curr.destX, curr.destY, i));
+			}
+			
+        	/*BEGIN ACTION CONTROL BLOCK***/
         	if (curr.state == 2) {
         		System.err.println("O fuck I am stunned");
         		System.out.println("RELEASE");
-        	} else if (curr.stunCooldown == 0 && /*curr.state != 1 && */!stunnableFoes.isEmpty()) {
+        	} else if (curr.x != curr.destX || curr.y != curr.destY) { //rush to target
+				System.out.println(String.format("MOVE %d %d %d", curr.destX, curr.destY, curr.entityID));
+			} else if (curr.stunCooldown == 0 && /*curr.state != 1 && */!stunnableFoes.isEmpty()) {
         		//if we are ready to stun, and we are not carrying a ghost, and there are enemies within stunning range
         		curr.stunCooldown += 20;
         		System.err.println(String.format("Stunning Buster %d", stunnableFoes.get(0).entityID));
@@ -621,8 +640,8 @@ class Player {
             
             //p.sittingDuckAI();
             
-            if (p.turnCount < 11)p.romkaClone1();
-            else p.dumbAI();
+            //if (p.turnCount < 11)p.romkaClone1();
+            /*else */p.dumbAI();
         }
 	}
 
