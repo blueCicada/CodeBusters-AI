@@ -101,8 +101,8 @@ class Player {
 		
 			if (this.turnCount == 1) {
 				double angle = 90/(this.allies.size() - 1);
-				curr.destX = curr.x + ((this.myTeamID == 0) ? 1 : -1)*(8000*Math.cos(i*angle));
-				curr.destY = curr.y + ((this.myTeamID == 0) ? 1 : -1)*(8000*Math.sin(i*angle));
+				curr.destX = (int) Math.round(curr.x + ((this.myTeamID == 0) ? 1 : -1)*(8000*Math.cos(i*angle)));
+				curr.destY = (int) Math.round(curr.y + ((this.myTeamID == 0) ? 1 : -1)*(8000*Math.sin(i*angle)));
 			}
 			
 			if (curr.stunCooldown == 0 && !stunnableFoes.isEmpty()) {
@@ -116,7 +116,7 @@ class Player {
         		} else { //Move towards base
         			System.out.println(String.format("MOVE %d %d", 16001*this.myTeamID, 9001*this.myTeamID));
         		}*/
-			} else if (curr.x != curr.destX && curr.y != curr.destY) {
+			} else if (curr.x != curr.destX || curr.y != curr.destY) {
 				System.out.println(String.format("MOVE %d %d", curr.destX, curr.destX));
 			} else {
 				this.dumbAI();
@@ -577,8 +577,8 @@ class Buster extends Entity {
 	int team;//entityType;
 	int state; // For busters: 0=idle, 1=carrying a ghost, 2=stunned, 3=in the process of trapping a ghost
 	int value; // For busters: Ghost id being carried. According to DeafGecko, this is -1 if not stunned or carrying
-	double destX;
-	double destY;
+	int destX;
+	int destY;
 	//int radarCount;
 	
 	public Buster (int entityID, int x, int y, int state, int value, int entityType) {
