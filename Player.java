@@ -100,9 +100,10 @@ class Player {
     		}
 		
 			if (this.turnCount == 1) {
+				int rushRadius = 8000;
 				double angle = Math.toRadians(90/(this.allies.size()));
-				curr.destX = (int) Math.round(curr.x + ((this.myTeamID == 0) ? 1 : -1)*(8000*Math.cos((i*angle)+(angle/2))));
-				curr.destY = (int) Math.round(curr.y + ((this.myTeamID == 0) ? 1 : -1)*(8000*Math.sin((i*angle)+(angle/2))));
+				curr.destX = (int) Math.round(curr.x + ((this.myTeamID == 0) ? 1 : -1)*(rushRadius*Math.cos((i*angle)+(angle/2))));
+				curr.destY = (int) Math.round(curr.y + ((this.myTeamID == 0) ? 1 : -1)*(rushRadius*Math.sin((i*angle)+(angle/2))));
 				System.err.println(/*Math.round(/*curr.x + /*((this.myTeamID == 0) ? 1 : -1)**/(/*8000**/Math.cos(1*90)))/*)*/;
 				System.err.println(/*Math.round(/*curr.y + /*((this.myTeamID == 0) ? 1 : -1)**/(/*8000**/Math.sin(1*angle)))/*)*/;
 				System.err.println(String.format("Ang %f, curr loc (%d,%d),"
