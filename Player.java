@@ -212,6 +212,28 @@ class Player {
 			//if everything works out, enable herd should be set to true by the time we exit this control block
 		}
 		
+		ArrayList<Buster> toAvenge = new ArrayList<Buster>(); 
+    	for (Buster a: allies) {
+    		if (a.wasCarrying && a.state == 2) {
+    			int sumX = 0, sumY = 0;
+    			ArrayList<Buster> stunnableFoes = new ArrayList<Buster>(); 
+            	//foes within stunning range which are not already stunned
+            	for (Buster f : foes) {
+        			if (distanceTo(a.x, a.y, f.x, f.y) <= 1760 && f.state != 2 && f.radarCount == 0) {
+        				if (f.state == 3) stunnableFoes.add(0, f); //prioritise carrying busters
+        				else stunnableFoes.add(f);
+        			}
+        		}
+    			for (Buster s : stunnableFoes) {
+    				sumX = s.x; sumY = s.y;
+    			}
+    			a.avengeX = sumX/stunnableFoes.size();
+    			a.avengeY = sumY/stunnableFoes.size();
+    			toAvenge.add(a);
+    			System.err.println(String.format("Burglary reported at %d, %d, ally %d down", a.avengeX, a.avengeY, a.entityID));
+    		}
+    	}
+		
         for (int i = 0; i < this.bustersPerPlayer; i++) {
         	
         	System.err.println(String.format("\nBuster %d reporting for duty", i));
@@ -255,19 +277,7 @@ class Player {
 				+"destX %d, destY %d, %d", angle, curr.x, curr.y, curr.destX, curr.destY, i));
 			}
 			
-        	ArrayList<Buster> toAvenge = new ArrayList<Buster>(); 
-        	for (Buster a: allies) {
-        		if (a.wasCarrying && a.state == 2) {
-        			int sumX = 0, sumY = 0;
-        			for (Buster f : stunnableFoes) {
-        				sumX = f.x; sumY = f.y;
-        			}
-        			curr.avengeX = sumX/stunnableFoes.size();
-        			curr.avengeY = sumY/stunnableFoes.size();
-        			toAvenge.add(curr);
-        			System.err.println(String.format("Burglary reported at %d, %d, ally %d down", curr.avengeX, curr.avengeY, curr.entityID));
-        		}
-        	}
+        	
         	
         	/*BEGIN ACTION CONTROL BLOCK***/
         	if (curr.state == 2) {
@@ -280,6 +290,76 @@ class Player {
         		System.out.println(String.format("STUN %d", stunnableFoes.get(0).entityID));
         		//assuming that the stun worked, the following line should be okay:
         		stunnableFoes.get(0).state = 2; //we set the state manually so other allies don't get confused
+        		if (curr.avengeMode == true) curr.avengeMode = false;
+        	} else if (curr.avengeMode == true) {
+        		System.err.println("Avenging");
+        		System.out.println(String.format("MOVE %d %d", curr.destX, curr.destY));
+        	} else if (!toAvenge.isEmpty()) {
+        		for (Buster a : toAvenge) {
+        			if (distanceTo((myTeamID==0)?16001:0,(myTeamID==0)?9001:0,curr.x,curr.y) //If I'm closer to enemy base
+        					<= distanceTo((myTeamID==0)?16001:0,(myTeamID==0)?9001:0,a.avengeX,a.avengeY) //than the thief is
+        						&& curr.stunCooldown < distanceTo((myTeamID==0)?16001:0,(myTeamID==0)?9001:0,a.avengeX,a.avengeY)/800) { 
+        				curr.avengeMode = true;
+        				System.err.println("Avenge mode activated");
+        				
+        				//calculate intercept point
+        				
+        				double midX = (curr.x + a.avengeX)/2;
+        				double midY = (curr.x + a.avengeY)/2;
+        				int fX = a.avengeX;
+        				int fY = a.avengeY;
+        				int aX = curr.x;
+        				int aY = curr.y;
+        				int bX = (myTeamID==0)?16001:0;
+        				int bY = (myTeamID==0)?9001:0;
+        				
+        				if (fX == aX && fY == aY) { //on top of each other, also covers (bX == fX && fY == aY && fX == aX)
+        					//if (curr.stunCooldown == 0) {
+        					//	System.out.println(String.format("STUN %d", stunnableFoes.get(0)));
+        					//} else {
+        					//	System.out.println(String.format("MOVE %d %d",bX,bY));
+        					//}
+        					curr.destX = bX;
+        					curr.destY = bY;
+        				} else if (bX == fX && fX == aX) { //foe and ally on side border
+        					curr.destX = fX;//(int) midX; or aX
+        					curr.destY = (int) ((myTeamID == 0) ? midY - curr.stunCooldown*800: midY + curr.stunCooldown*800);
+        				/*} else if (bX == fX && fY == aY) { //foe on side border, ally and foe on same horizontal line (won't reach in time?)
+        					//x = midX
+        					curr.destX = (int) midX;
+        					curr.destY = (int) ((myTeamID == 0) ? midY - curr.stunCooldown*800: midY + curr.stunCooldown*800);*/
+        				} else if (bX == fX) { //foe on side border
+        					//x = bX
+        					//y = midY + m2(x-midX)
+        					//((y-midY)/m2)+midX = x NOPE
+        					double m2 = (aX-fX)/(fY-aY);
+        					curr.destX = fX;
+        					curr.destY = (int) ((myTeamID == 0) ? midY + m2*(bX-midX) - curr.stunCooldown*800 :  midY + m2*(bX-midX) + curr.stunCooldown*800);
+        				} else if (fY == aY) { //foe and ally on same vertical line
+        					//not yet factoring in stun cooldowns
+        					//y = midY
+        					double m3 = (bY-fY)/(bX-fX);
+        					curr.destX = (int) (((midY-fY)/m3) + fX);
+        					curr.destY = (int) midY;
+        				} else if (fX == aX) { //foe and ally on same horizontal line
+        					//not yet factoring in stun cooldowns
+        					//x = midX
+        					//y = ((bY-fY)*(x-fX)/(bX-fX))+fY
+        					curr.destX = (int) midX;
+        					curr.destY = (int) (((bY-fY)*(midX-fX)/(bX-fX))+fY);
+        				} else {
+        					//not yet factoring in stun cooldowns
+        					double m2 = (aX-fX)/(fY-aY);
+        					double m3 = (bY-fY)/(bX-fX);
+        					curr.destY = (int) (((-m2*fY/m3) + m2*fX - (m2*(aX+fX)/2) + ((aY+fY)/2))/(1-(m2/m3)));
+        					curr.destX = (int) (((curr.destY-fY)/m3) + fX);
+        				}
+        				
+        				System.out.println(String.format("MOVE %d %d", curr.destX, curr.destY));
+        				break;
+        			}
+        		}
+        		
         	} else if ((curr.x != curr.destX || curr.y != curr.destY) && enableRush) { //rush to target
 				System.out.println(String.format("MOVE %d %d %d", curr.destX, curr.destY, curr.entityID));
 			/*} else if (enableHerd == true) {
@@ -781,6 +861,7 @@ class Entity {
 }
 
 class Buster extends Entity {
+	boolean avengeMode;
 	int stunCooldown;
 	int team;//entityType;
 	int state; // For busters: 0=idle, 1=carrying a ghost, 2=stunned, 3=in the process of trapping a ghost
@@ -794,6 +875,7 @@ class Buster extends Entity {
 	
 	public Buster (int entityID, int x, int y, int state, int value, int entityType) {
 		super(entityID, x, y);
+		this.avengeMode = false;
 		this.stunCooldown = 0;//if you ever decide to reconstruct the allies list from scratch, be careful with this
 		this.state = state;
 		this.value = value;
