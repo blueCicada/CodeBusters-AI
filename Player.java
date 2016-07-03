@@ -33,7 +33,9 @@ class Player {
     private int myTeamID; // if this is 0, your base is on the top left of the map, if it is one, on the bottom right
     private int turnCount; //does not count enemy turns
     
-	
+	boolean enableHerd;
+    
+	private List<Ghost> initialGhosts;
 	private List<Ghost> ghosts;
 	//private PriorityQueue<Ghost> ghosts;
     private List<Buster> allies;
@@ -52,6 +54,9 @@ class Player {
 		this.ghostCount = ghostCount;
 		this.bustersPerPlayer = bustersPerPlayer;
 		
+		enableHerd = false;
+		
+		initialGhosts = new ArrayList<Ghost>();
 		ghosts = new /*PriorityQueue<Ghost>(25, new StaminaComparator());*/ArrayList<Ghost>();
 		allies = new ArrayList<Buster>();
 		foes = new ArrayList<Buster>();
@@ -144,11 +149,67 @@ class Player {
 		System.err.println(this.bustersPerPlayer);
 		
 		boolean enableRush = false;
-		boolean enableHerd = false;
+		int rushRadius = 8000;
 		
 		if (this.turnCount < 11) {
 			enableRush = true;
 			System.err.println("RUSHING ENABLED");
+			//collect data
+			outerLoop:
+			for (Ghost g: this.ghosts) {
+				for (Ghost seen: this.initialGhosts) {
+					if (seen.entityID == g.entityID) { //update info if ghost is seen
+						seen.x = g.x;
+						seen.y = g.y;
+						seen.value = g.value;
+						seen.state = g.state;
+						continue outerLoop;
+					}
+				}
+				this.initialGhosts.add(g); //otherwise it has not been seen, so add to list
+			}
+		} else if (this.turnCount < 16 && enableHerd == false) { //give em 5 turns to find and capture a ghost they like
+			enableHerd = true;
+			for (Buster a : allies) {
+				if (a.state != 1) { //if not carrying
+					enableHerd = false;
+					break;
+				}
+			}
+			if (enableHerd == true) { 
+				//if this is true, then all the busters are carrying atm, and herding could work
+				//before we evaluate whether it is worth herding, we check for ghosts that don't belong in initialGhosts
+				
+				//we cull a ghost if it is either:
+				//beyond the herding radius (rushRadius)
+					//perhaps +some arbitrary amount to account for the busters starting further out
+					//(alternatively, get min buster distance from base and compare with that)
+				//OR it is already being carried
+				int offset = 800; //this is a tiny offset, in practice offset is significantly larger
+				for (Iterator<Ghost> iterator = this.initialGhosts.iterator(); iterator.hasNext();) {
+				    Ghost g = iterator.next();
+				    if (this.distanceTo(16001*this.myTeamID, 8001*this.myTeamID, g.x, g.y) > rushRadius + offset) {
+				    	// Remove the current element from the iterator and the list.
+				        iterator.remove();
+					} else {
+						for (Buster a: allies) {
+							if (g.entityID == a.value) {
+								iterator.remove();
+							}
+						}
+					}
+				}
+				
+				//we now check whether herding is worth it
+				int sum = 0;
+				for (Ghost g: this.initialGhosts) {
+					sum += this.distanceTo(16001*this.myTeamID, 8001*this.myTeamID, g.x, g.y);
+				}
+				int savings = 2*sum - this.allies.size()*(rushRadius/800); //turns saved
+				if (savings < 0) enableHerd = false;
+				System.err.println(String.format("Herding is %b, predicted savings:%d", enableHerd, savings));
+			}
+			//if everything works out, enable herd should be set to true by the time we exit this control block
 		}
 		
         for (int i = 0; i < this.bustersPerPlayer; i++) {
@@ -185,7 +246,6 @@ class Player {
     		}
         	
         	if (this.turnCount == 1) {
-        		int rushRadius = 8000;
 				double angle = Math.toRadians(90/(this.allies.size()));
 				curr.destX = (int) Math.round(curr.x + ((this.myTeamID == 0) ? 1 : -1)*(rushRadius*Math.cos((i*angle)+(angle/2))));
 				curr.destY = (int) Math.round(curr.y + ((this.myTeamID == 0) ? 1 : -1)*(rushRadius*Math.sin((i*angle)+(angle/2))));
@@ -208,6 +268,8 @@ class Player {
         		stunnableFoes.get(0).state = 2; //we set the state manually so other allies don't get confused
         	} else if ((curr.x != curr.destX || curr.y != curr.destY) && enableRush) { //rush to target
 				System.out.println(String.format("MOVE %d %d %d", curr.destX, curr.destY, curr.entityID));
+			} else if (enableHerd = true){
+				
 			} else if (curr.state == 3) {//if currently busting a ghost and the above does not apply - 
         		//then continue busting it
         		System.err.println(String.format("Struggling with ghost %d", curr.value));
@@ -231,6 +293,10 @@ class Player {
         		//		|| (this.myTeamID == 1 && distanceTo(16001,9001,curr.x,curr.y) < 1600)) {
         		if (distanceTo(16001*this.myTeamID,9001*this.myTeamID,curr.x,curr.y) <= 1600) { //a little hackier
         			System.out.println("RELEASE");
+        			if (enableHerd == true && i == bustersPerPlayer - 1) {
+        				enableHerd = false;
+        				System.err.println("HERDING COMPLETE");
+        			}
         		} else { //Move towards base
         			System.out.println(String.format("MOVE %d %d", 16001*this.myTeamID, 9001*this.myTeamID));
         		}
