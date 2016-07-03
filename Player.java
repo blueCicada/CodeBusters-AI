@@ -255,6 +255,20 @@ class Player {
 				+"destX %d, destY %d, %d", angle, curr.x, curr.y, curr.destX, curr.destY, i));
 			}
 			
+        	ArrayList<Buster> toAvenge = new ArrayList<Buster>(); 
+        	for (Buster a: allies) {
+        		if (a.wasCarrying && a.state == 2) {
+        			int sumX = 0, sumY = 0;
+        			for (Buster f : stunnableFoes) {
+        				sumX = f.x; sumY = f.y;
+        			}
+        			curr.avengeX = sumX/stunnableFoes.size();
+        			curr.avengeY = sumY/stunnableFoes.size();
+        			toAvenge.add(curr);
+        			System.err.println(String.format("Burglary reported at %d, %d, ally %d down", curr.avengeX, curr.avengeY, curr.entityID));
+        		}
+        	}
+        	
         	/*BEGIN ACTION CONTROL BLOCK***/
         	if (curr.state == 2) {
         		System.err.println("O fuck I am stunned");
@@ -690,6 +704,7 @@ class Player {
                 		if (a.entityID == entityID) {
                 			a.x = x;
                 			a.y = y;
+                			if (a.state == 1) a.wasCarrying = true;
                 			a.state = state;
                 			a.value = value;
                 			if (a.stunCooldown != 0) a.stunCooldown--;
@@ -772,7 +787,10 @@ class Buster extends Entity {
 	int value; // For busters: Ghost id being carried. According to DeafGecko, this is -1 if not stunned or carrying
 	int destX;
 	int destY;
+	int avengeX;
+	int avengeY; //use these coordinates when you need to avenge this buster with another buster
 	int radarCount;
+	boolean wasCarrying;
 	
 	public Buster (int entityID, int x, int y, int state, int value, int entityType) {
 		super(entityID, x, y);
@@ -781,6 +799,7 @@ class Buster extends Entity {
 		this.value = value;
 		this.team = entityType; //should only be either TEAM_0_BUSTER or TEAM_1_BUSTER, should never be GHOST
 		this.radarCount = 0;
+		this.wasCarrying = false;
 	}
 }
 
