@@ -184,9 +184,10 @@ class Player {
     		}
         	
         	if (this.turnCount == 1) {
+        		int rushRadius = 8000;
 				double angle = Math.toRadians(90/(this.allies.size()));
-				curr.destX = (int) Math.round(curr.x + ((this.myTeamID == 0) ? 1 : -1)*(8000*Math.cos((i*angle)+(angle/2))));
-				curr.destY = (int) Math.round(curr.y + ((this.myTeamID == 0) ? 1 : -1)*(8000*Math.sin((i*angle)+(angle/2))));
+				curr.destX = (int) Math.round(curr.x + ((this.myTeamID == 0) ? 1 : -1)*(rushRadius*Math.cos((i*angle)+(angle/2))));
+				curr.destY = (int) Math.round(curr.y + ((this.myTeamID == 0) ? 1 : -1)*(rushRadius*Math.sin((i*angle)+(angle/2))));
 				System.err.println(/*Math.round(/*curr.x + /*((this.myTeamID == 0) ? 1 : -1)**/(/*8000**/Math.cos(1*90)))/*)*/;
 				System.err.println(/*Math.round(/*curr.y + /*((this.myTeamID == 0) ? 1 : -1)**/(/*8000**/Math.sin(1*angle)))/*)*/;
 				System.err.println(String.format("Ang %f, curr loc (%d,%d),"
@@ -556,9 +557,9 @@ class Player {
             int entities = in.nextInt(); // the number of busters and ghosts visible to you
             p.turnCount++; //turns shall start from 1, and we do not count enemy turns
             p.ghosts.clear();
-            /*for (Buster f: p.foes ){
+            for (Buster f: p.foes ){
             	f.radarCount++;
-            }*/
+            }
             turnLoop:
             for (int i = 0; i < entities; i++) {
             	//System.err.println("fuck");
@@ -624,7 +625,7 @@ class Player {
                 			f.y = y;
                 			f.state = state;
                 			f.value = value;
-                			//f.radarCount = 0;
+                			f.radarCount = 0;
                 			continue turnLoop;
                 		}
                 	}
@@ -673,7 +674,7 @@ class Buster extends Entity {
 	int value; // For busters: Ghost id being carried. According to DeafGecko, this is -1 if not stunned or carrying
 	int destX;
 	int destY;
-	//int radarCount;
+	int radarCount;
 	
 	public Buster (int entityID, int x, int y, int state, int value, int entityType) {
 		super(entityID, x, y);
@@ -681,7 +682,7 @@ class Buster extends Entity {
 		this.state = state;
 		this.value = value;
 		this.team = entityType; //should only be either TEAM_0_BUSTER or TEAM_1_BUSTER, should never be GHOST
-		//this.radarCount = 0;
+		this.radarCount = 0;
 	}
 }
 
