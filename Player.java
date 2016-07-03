@@ -144,6 +144,7 @@ class Player {
 		System.err.println(this.bustersPerPlayer);
 		
 		boolean enableRush = false;
+		boolean enableHerd = false;
 		
 		if (this.turnCount < 11) {
 			enableRush = true;
@@ -177,7 +178,7 @@ class Player {
         	ArrayList<Buster> stunnableFoes = new ArrayList<Buster>(); 
         	//foes within stunning range which are not already stunned
         	for (Buster f : foes) {
-    			if (distanceTo(curr.x, curr.y, f.x, f.y) <= 1760 && f.state != 2) {
+    			if (distanceTo(curr.x, curr.y, f.x, f.y) <= 1760 && f.state != 2 && f.radarCount == 0) {
     				if (f.state == 3) stunnableFoes.add(0, f); //prioritise carrying busters
     				else stunnableFoes.add(f);
     			}
