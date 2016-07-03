@@ -214,7 +214,7 @@ class Player {
 		
 		ArrayList<Buster> toAvenge = new ArrayList<Buster>(); 
     	for (Buster a: allies) {
-    		if (a.wasCarrying && a.state == 2) {
+    		if (a.wasCarrying && a.state == 2 && distanceTo(16001*myTeamID,9001*myTeamID,a.x,a.y) > 1600) {
     			int sumX = 0, sumY = 0;
     			ArrayList<Buster> stunnableFoes = new ArrayList<Buster>(); 
             	//foes within stunning range which are not already stunned
@@ -224,11 +224,16 @@ class Player {
         				else stunnableFoes.add(f);
         			}
         		}
+            	for (Buster f : foes) {
+            		if (distanceTo(a.x, a.y, f.x, f.y) <= 1760 && !stunnableFoes.contains(f) && f.radarCount == 0) {
+            			stunnableFoes.add(f); //least priority: stunned foes
+            		}
+            	}
     			for (Buster s : stunnableFoes) {
     				sumX = s.x; sumY = s.y;
     			}
-    			a.avengeX = sumX/stunnableFoes.size();
-    			a.avengeY = sumY/stunnableFoes.size();
+    			a.avengeX = (stunnableFoes.isEmpty()) ? a.x: sumX/stunnableFoes.size();
+    			a.avengeY = (stunnableFoes.isEmpty()) ? a.y: sumY/stunnableFoes.size();
     			toAvenge.add(a);
     			System.err.println(String.format("Burglary reported at %d, %d, ally %d down", a.avengeX, a.avengeY, a.entityID));
     		}
@@ -267,6 +272,15 @@ class Player {
     			}
     		}
         	
+        	ArrayList<Buster> avengeable = new ArrayList<Buster>();
+        	for (Buster a : toAvenge) {
+    			if (distanceTo((myTeamID==0)?16001:0,(myTeamID==0)?9001:0,curr.x,curr.y) //If I'm closer to enemy base
+    					<= distanceTo((myTeamID==0)?16001:0,(myTeamID==0)?9001:0,a.avengeX,a.avengeY) //than the thief is
+    						&& curr.stunCooldown < distanceTo((myTeamID==0)?16001:0,(myTeamID==0)?9001:0,a.avengeX,a.avengeY)/800) {
+    				avengeable.add(a);
+    			}
+    		}
+        	
         	if (this.turnCount == 1) {
 				double angle = Math.toRadians(90/(this.allies.size()));
 				curr.destX = (int) Math.round(curr.x + ((this.myTeamID == 0) ? 1 : -1)*(rushRadius*Math.cos((i*angle)+(angle/2))));
@@ -294,11 +308,12 @@ class Player {
         	} else if (curr.avengeMode == true) {
         		System.err.println("Avenging");
         		System.out.println(String.format("MOVE %d %d", curr.destX, curr.destY));
-        	} else if (!toAvenge.isEmpty()) {
-        		for (Buster a : toAvenge) {
-        			if (distanceTo((myTeamID==0)?16001:0,(myTeamID==0)?9001:0,curr.x,curr.y) //If I'm closer to enemy base
+        	} else if (!avengeable.isEmpty()) {
+        		//for (Buster a : toAvenge) {
+        			/*if (distanceTo((myTeamID==0)?16001:0,(myTeamID==0)?9001:0,curr.x,curr.y) //If I'm closer to enemy base
         					<= distanceTo((myTeamID==0)?16001:0,(myTeamID==0)?9001:0,a.avengeX,a.avengeY) //than the thief is
-        						&& curr.stunCooldown < distanceTo((myTeamID==0)?16001:0,(myTeamID==0)?9001:0,a.avengeX,a.avengeY)/800) { 
+        						&& curr.stunCooldown < distanceTo((myTeamID==0)?16001:0,(myTeamID==0)?9001:0,a.avengeX,a.avengeY)/800) { */
+        				Buster a = avengeable.get(0);
         				curr.avengeMode = true;
         				System.err.println("Avenge mode activated");
         				
@@ -356,9 +371,9 @@ class Player {
         				}
         				
         				System.out.println(String.format("MOVE %d %d", curr.destX, curr.destY));
-        				break;
-        			}
-        		}
+        				//break;
+        			//}
+        		//}
         		
         	} else if ((curr.x != curr.destX || curr.y != curr.destY) && enableRush) { //rush to target
 				System.out.println(String.format("MOVE %d %d %d", curr.destX, curr.destY, curr.entityID));
@@ -785,6 +800,7 @@ class Player {
                 			a.x = x;
                 			a.y = y;
                 			if (a.state == 1) a.wasCarrying = true;
+                			else a.wasCarrying = false;
                 			a.state = state;
                 			a.value = value;
                 			if (a.stunCooldown != 0) a.stunCooldown--;
