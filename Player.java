@@ -205,7 +205,7 @@ class Player {
 				for (Ghost g: this.initialGhosts) {
 					sum += this.distanceTo(16001*this.myTeamID, 8001*this.myTeamID, g.x, g.y);
 				}
-				int savings = 2*sum - this.allies.size()*(rushRadius/800); //turns saved
+				int savings = 2*sum - this.allies.size()*(rushRadius/*/800*/); //units of distance saved
 				if (savings < 0) enableHerd = false;
 				System.err.println(String.format("Herding is %b, predicted savings:%d", enableHerd, savings));
 			}
@@ -268,14 +268,14 @@ class Player {
         		stunnableFoes.get(0).state = 2; //we set the state manually so other allies don't get confused
         	} else if ((curr.x != curr.destX || curr.y != curr.destY) && enableRush) { //rush to target
 				System.out.println(String.format("MOVE %d %d %d", curr.destX, curr.destY, curr.entityID));
-			} else if (enableHerd == true) {
+			/*} else if (enableHerd == true) {
 				System.err.println("herding...");
 				double angle = Math.atan(curr.y/curr.x); //in rads
 				double r = distanceTo(16001*this.myTeamID,9001*this.myTeamID,curr.x,curr.y);
 				double destR = r - 400;
-				int destX = (int) Math.ceil(r*Math.cos(angle)); //don't confuse with field of same name
-				int destY = (int) Math.ceil(r*Math.sin(angle)); //don't confuse with field of same name
-				System.out.println(String.format("MOVE %d %d", destX, destY));
+				int destX = (int) Math.ceil(destR*Math.cos(angle)); //don't confuse with field of same name
+				int destY = (int) Math.ceil(destR*Math.sin(angle)); //don't confuse with field of same name
+				System.out.println(String.format("MOVE %d %d", ((this.myTeamID == 0) ? 1 : -1)*destX, ((this.myTeamID == 0) ? 1 : -1)*destY));*/
 			} else if (curr.state == 3) {//if currently busting a ghost and the above does not apply - 
         		//then continue busting it
         		System.err.println(String.format("Struggling with ghost %d", curr.value));
@@ -303,7 +303,15 @@ class Player {
         				enableHerd = false;
         				System.err.println("HERDING COMPLETE");
         			}
-        		} else { //Move towards base
+        		} else if (enableHerd == true) {
+        			System.err.println("herding...");
+					double angle = (curr.x != 0) ? Math.atan(curr.y/curr.x) : Math.toRadians(90); //in rads
+					double r = distanceTo(16001*this.myTeamID,9001*this.myTeamID,curr.x,curr.y);
+					double destR = r - 400;
+					int destX = (int) Math.ceil(destR*Math.cos(angle)); //don't confuse with field of same name
+					int destY = (int) Math.ceil(destR*Math.sin(angle)); //don't confuse with field of same name
+					System.out.println(String.format("MOVE %d %d", ((this.myTeamID == 0) ? 1 : -1)*destX, ((this.myTeamID == 0) ? 1 : -1)*destY));
+				} else { //Move towards base
         			System.out.println(String.format("MOVE %d %d", 16001*this.myTeamID, 9001*this.myTeamID));
         		}
         		
