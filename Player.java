@@ -305,12 +305,29 @@ class Player {
         			}
         		} else if (enableHerd == true) {
         			System.err.println("herding...");
-					double angle = (curr.x != 0) ? Math.atan(curr.y/curr.x) : Math.toRadians(90); //in rads
-					double r = distanceTo(16001*this.myTeamID,9001*this.myTeamID,curr.x,curr.y);
-					double destR = r - 400;
-					int destX = (int) Math.ceil(destR*Math.cos(angle)); //don't confuse with field of same name
-					int destY = (int) Math.ceil(destR*Math.sin(angle)); //don't confuse with field of same name
-					System.out.println(String.format("MOVE %d %d", ((this.myTeamID == 0) ? 1 : -1)*destX, ((this.myTeamID == 0) ? 1 : -1)*destY));
+        			if (myTeamID == 0) {
+        				double angle = (curr.x != 0) ? Math.atan(curr.y/curr.x) : Math.toRadians(90); //in rads
+    					double r = distanceTo(16001*this.myTeamID,9001*this.myTeamID,curr.x,curr.y);
+    					double destR = r - 400;
+    					int destX = (int) Math.ceil(destR*Math.cos(angle)); //don't confuse with field of same name
+    					int destY = (int) Math.ceil(destR*Math.sin(angle)); //don't confuse with field of same name
+    					System.out.println(String.format("MOVE %d %d", destX, destY));
+        			} else if (myTeamID == 1) {
+        				int hX = 16001 - curr.x;
+        				int hY = 9001 - curr.y;
+        				//double hR = distanceTo(16001,9001,curr.x,curr.y);;
+        				double hAngle = (hX != 0) ? Math.atan(hY/hX) : Math.toRadians(90); //in rads
+        				int mR = 400;
+        				double mX = mR*Math.cos(hAngle);
+        				double mY = mR*Math.sin(hAngle);
+        				int destX = (int) Math.ceil(curr.x + mX); //don't confuse with field of same name
+    					int destY = (int) Math.ceil(curr.y + mY); //don't confuse with field of same name
+    					
+    					System.err.println(String.format("c(%d,%d),h(%d,%d),hAngle(%f),mR(400),m(%f,%f),dest(%d,%d)",curr.x,curr.y,hX,hY,hAngle,mX,mY,destX,destY));
+    					
+    					System.out.println(String.format("MOVE %d %d", destX, destY));
+        			}
+					
 				} else { //Move towards base
         			System.out.println(String.format("MOVE %d %d", 16001*this.myTeamID, 9001*this.myTeamID));
         		}
