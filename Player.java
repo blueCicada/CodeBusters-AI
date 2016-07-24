@@ -336,9 +336,11 @@ class Player {
         					//}
         					curr.destX = bX;
         					curr.destY = bY;
+        					System.err.println("case1");
         				} else if (bX == fX && fX == aX) { //foe and ally on side border
         					curr.destX = fX;//(int) midX; or aX
         					curr.destY = (int) ((myTeamID == 0) ? midY - curr.stunCooldown*800: midY + curr.stunCooldown*800);
+        					System.err.println("case2");
         				/*} else if (bX == fX && fY == aY) { //foe on side border, ally and foe on same horizontal line (won't reach in time?)
         					//x = midX
         					curr.destX = (int) midX;
@@ -350,24 +352,28 @@ class Player {
         					double m2 = (aX-fX)/(fY-aY);
         					curr.destX = fX;
         					curr.destY = (int) ((myTeamID == 0) ? midY + m2*(bX-midX) - curr.stunCooldown*800 :  midY + m2*(bX-midX) + curr.stunCooldown*800);
+        					System.err.println("case3");
         				} else if (fY == aY) { //foe and ally on same vertical line
         					//not yet factoring in stun cooldowns
         					//y = midY
         					double m3 = (bY-fY)/(bX-fX);
         					curr.destX = (int) (((midY-fY)/m3) + fX);
         					curr.destY = (int) midY;
+        					System.err.println("case4");
         				} else if (fX == aX) { //foe and ally on same horizontal line
         					//not yet factoring in stun cooldowns
         					//x = midX
         					//y = ((bY-fY)*(x-fX)/(bX-fX))+fY
         					curr.destX = (int) midX;
         					curr.destY = (int) (((bY-fY)*(midX-fX)/(bX-fX))+fY);
+        					System.err.println("case5");
         				} else {
         					//not yet factoring in stun cooldowns
         					double m2 = (aX-fX)/(fY-aY);
         					double m3 = (bY-fY)/(bX-fX);
         					curr.destY = (int) (((-m2*fY/m3) + m2*fX - (m2*(aX+fX)/2) + ((aY+fY)/2))/(1-(m2/m3)));
         					curr.destX = (int) (((curr.destY-fY)/m3) + fX);
+        					System.err.println("case6");
         				}
         				
         				System.out.println(String.format("MOVE %d %d", curr.destX, curr.destY));
